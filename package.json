@@ -20,18 +20,13 @@
     "build": "cross-env NODE_ENV=production webpack --progress"
   },
   "dependencies": {
-    "@andrew0687/xml-viewer": "^1.2.1",
-    "@highlightjs/vue-plugin": "^1.0.2",
     "leaflet": "^1.7.1",
     "moment": "^2.29.1",
-    "momentjs": "^2.0.0",
     "v-xml-tree": "^1.0.0",
     "vue": "^2.6.14",
     "vue-custom-element": "^3.2.14",
-    "vue-i18n": "^8.22.4",
     "vue-resource": "^1.5.1",
-    "wellknown": "^0.5.0",
-    "xml-formatter": "^2.6.1"
+    "wellknown": "^0.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
