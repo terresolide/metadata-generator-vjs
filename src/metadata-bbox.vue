@@ -2,19 +2,19 @@
   <div class="bbox">
     <span class="label">W</span>
     <input v-model="meta.west" type="number" min="-180" max="180" step="any"
-    required @change="change($event)" title="Un nombre entre -180 et 180"/>
+    required @change="change($event)" title="Veuillez saisir un nombre entre -180 et 180"/>
 
     <span class="label">N</span>
     <input v-model="meta.north" type="number" min="-90" max="90" step="any"
-    required @change="change($event)"/>
+    required @change="change($event)" title="Veuillez saisir un nombre entre -90 et 90"/>
     
     <span class="label">E</span>
     <input v-model="meta.east" type="number" min="-180" max="180" step="any"
-    required @change="change($event)"/>
+    required @change="change($event)" title="Veuillez saisir un nombre entre -180 et 180"/>
     
      <span class="label">S</span>
     <input v-model="meta.south" type="number" min="-90" max="90" step="any"
-    required @change="change($event)"/>
+    required @change="change($event)" title="Veuillez saisir un nombre entre -90 et 90"/>
     
   </div>
 </template>
