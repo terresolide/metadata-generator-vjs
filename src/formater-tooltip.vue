@@ -50,7 +50,7 @@ div.fmt-tooltip {
   display:none;
   background-color: #fafafa;
   border: 1px solid #a3a3a3;
-  font-size: smaller;
+  font-size: 12px;
   font-weight:400;
   line-height:1;
   text-align:left;

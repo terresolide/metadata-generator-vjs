@@ -4,7 +4,7 @@
   <div v-if="type === 'publisher' || type === 'meta'">
     <div >
      <label>Organisation</label>
-      <input type="text" v-model="meta.fullName" style="width:300px;" required />
+      <input type="text" v-model="meta.fullName"  style="width:300px;" required />
       <meta-mro value="M"></meta-mro>
       <formater-tooltip v-if="type === 'publisher'" description="Le nom de l'éditeur (publisher) est utilisé pour les 
       citations <b>Datacite</b> qui ont la forme:<br> <em>Creator (PublicationYear): 
@@ -28,12 +28,12 @@
      <div v-if="meta.nameType === 'Personal'">
       <label>Prénom</label> 
       <input type="text" v-model="meta.givenName" @change="changeName"/>
-      <meta-mro value="O"></meta-mro>
+      <meta-mro value="R"></meta-mro>
     </div >
     <div v-if="meta.nameType === 'Personal'">
       <label>Nom famille</label>
       <input type="text" v-model="meta.familyName" @change="changeName"/>
-      <meta-mro value="O"></meta-mro>
+      <meta-mro value="R"></meta-mro>
     </div>
 	  <div :class="{datacite: meta.nameType === 'Personal'}">
 	      <label>Nom complet</label>

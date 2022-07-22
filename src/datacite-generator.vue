@@ -119,6 +119,33 @@ export default {
             xmlDoc.documentElement.appendChild(root)
           }
           break
+        case 'geoLocation':
+          var root = xmlDoc.createElement('geoLocations')
+          var added = false
+          this.metadata.geoLocation.forEach(function (location) {
+            if (location.name || (location.west && location.east && location.south && location.north)) {
+              var node = xmlDoc.createElement('geoLocation')
+              root.appendChild(node)
+              if (location.name) {
+                var locationPlace = self.createNode('locationPlace',location.name, xmlDoc)
+                node.appendChild(locationPlace)
+                added = true
+              }
+              if (location.west && location.east && location.south && location.north) {
+                var geoLocationBox = xmlDoc.createElement('geoLocationBox')
+                node.appendChild(geoLocationBox)
+                node.appendChild(self.createNode('westBoundLongitude', location.west, xmlDoc))
+                node.appendChild(self.createNode('eastBoundLongitude', location.east, xmlDoc))
+                node.appendChild(self.createNode('southBoundLatitude', location.south, xmlDoc))
+                node.appendChild(self.createNode('northBoundLatitude', location.north, xmlDoc))
+                added = true
+              }
+            }
+          })
+          if (added) {
+            xmlDoc.documentElement.appendChild(root)
+          }
+          break
         case 'title':
            var titles = xmlDoc.createElement('titles')
            xmlDoc.documentElement.appendChild(titles)
