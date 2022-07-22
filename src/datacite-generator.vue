@@ -134,10 +134,10 @@ export default {
               if (location.west && location.east && location.south && location.north) {
                 var geoLocationBox = xmlDoc.createElement('geoLocationBox')
                 node.appendChild(geoLocationBox)
-                node.appendChild(self.createNode('westBoundLongitude', location.west, xmlDoc))
-                node.appendChild(self.createNode('eastBoundLongitude', location.east, xmlDoc))
-                node.appendChild(self.createNode('southBoundLatitude', location.south, xmlDoc))
-                node.appendChild(self.createNode('northBoundLatitude', location.north, xmlDoc))
+                geoLocationBox.appendChild(self.createNode('westBoundLongitude', location.west, xmlDoc))
+                geoLocationBox.appendChild(self.createNode('eastBoundLongitude', location.east, xmlDoc))
+                geoLocationBox.appendChild(self.createNode('southBoundLatitude', location.south, xmlDoc))
+                geoLocationBox.appendChild(self.createNode('northBoundLatitude', location.north, xmlDoc))
                 added = true
               }
             }
