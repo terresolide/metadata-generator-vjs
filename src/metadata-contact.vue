@@ -1,5 +1,8 @@
 <template>
-<div class="contact">
+<div class="block-element contact">
+ <span v-if="['publisher','meta'].indexOf(type) < 0" class="circle">{{id + 1 }}</span>
+ <span v-else class="no-circle"></span>
+ <div class="element-content">
   <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
   <div v-if="type === 'publisher' || type === 'meta'">
     <div >
@@ -35,7 +38,7 @@
       <input type="text" v-model="meta.familyName" @change="changeName"/>
       <meta-mro value="R"></meta-mro>
     </div>
-	  <div :class="{datacite: meta.nameType === 'Personal'}">
+	  <div>
 	      <label>Nom complet</label>
 	      <input type="text" v-model="meta.fullName" required style="width:300px;" />
 	      <meta-mro value="M"></meta-mro>
@@ -77,23 +80,22 @@
         :erasable="meta.affiliations.length > 1 || meta.nameType === 'Organizational'"
         @change="changeAffiliation" @remove="removeAffiliation"></metadata-affiliation>
       </span>
-        <input type="button" value="Ajouter affiliation" @click="addAffiliation" />
+      <input type="button" style="margin-bottom:10px;" value="Ajouter affiliation" @click="addAffiliation" />
         
     </div>
-	  <div class="datacite">
-	    <label>Identifiant</label>
+    </div>
+	  <div :class="{iso: type === 'publisher'}">
+	    <label >Identifiant contact</label>
 	    <formater-tooltip description="Il s'agit d'identifiant de l'utilisateur auprès de
-      registres internationaux comme ORCID"></formater-tooltip>
+      registres internationaux comme ORCID  ou ROR"></formater-tooltip>
 	    <meta-mro value="O"></meta-mro>
 	    
 	      <metadata-identifier v-if="meta.identifier" :type="meta.nameType" :identifier="meta.identifier"
 	      @change="changeIdentifier"  @remove="removeIdentifier"></metadata-identifier>
-	      <input type="button" value="Ajouter Id" @click="addIdentifier" title="Ajouter un identifiant pour le contact"/> 
+	      <input v-if="!meta.identifier" type="button" value="Ajouter Id" @click="addIdentifier" title="Ajouter un identifiant pour le contact"/> 
 	    </div>
-	    
-	    
-	  </div>
 	  
+	</div>
 	</div>
 </div>
 </template>
@@ -222,26 +224,19 @@
 </script>
 <style scoped>
 div.contact {
-  position: relative;
-  padding: 5px 10px;
-  border: 1px solid grey;
-  border-radius: 5px;
-  min-width:500px;
-  background: #F5F5F5;
   margin:8px 5px 8px 0;
 }
 label,
 span.label {
   color:#333;
   font-weight:700;
-
   display:inline-block;
   vertical-align:top;
 }
 label {
   font-size:1em;
-  min-width:120px;
-  max-width:120px;
+  min-width:140px;
+  max-width:140px;
 }
 
 </style>

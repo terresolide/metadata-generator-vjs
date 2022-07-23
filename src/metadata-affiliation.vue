@@ -1,12 +1,12 @@
 <template>
 <div class="identifier">
  <div v-if="erasable" style="position:absolute;top:2px;right:5px;" class="fa fa-close" @click="remove"></div>
- <div>
+ <div style="margin-bottom:2px;">
    <label>Organisation</label>
-   <input type="text" v-model="meta.name" style="width:300px;"/>
+   <input type="text" v-model="meta.name" class="medium" required/>
    <meta-mro value="M"></meta-mro>
   </div>
- <div class="datacite">
+ <div>
   <label> Identifiant </label>
   
   <formater-tooltip v-if="!meta.identifier" description="Il s'agit de l'identifiant de l'organisation
@@ -38,7 +38,7 @@
      },
      affiliation: {
        type: Object,
-       default: () => { return {name: '', identifier: null}}
+       default: () => { return {name: null, identifier: null}}
      },
      erasable: {
        type: Boolean,
@@ -86,6 +86,7 @@
 <style scoped>
 label {
   font-size:1em;
+  font-weight: 700;
   min-width:120px;
   max-width:120px;
 }

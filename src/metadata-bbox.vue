@@ -1,16 +1,17 @@
 <template>
-  <div class="bbox">
+  <div class="block-element bbox">
     <span class="circle">{{id + 1 }}</span>
-    <div class="bbox-content">
+    <div class="element-content large">
      <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
-      <div style="margin-bottom:8px;" class="datacite">
-         <span class="label premium" >Dénomination</span> 
+      <div style="margin-bottom:8px;" >
+         <span class="label premium" >Toponyme</span> 
          <input type="text" class="medium" v-model="meta.name" :tabindex="id + 1"/>
          <meta-mro value="O"></meta-mro>
       </div>
       <div >
          <span class="label premium">Bounding Box</span>
          <meta-mro value="M"></meta-mro>
+       <!--    <input type="button" value="Dessiner" @click="draw" /> -->
       </div>
 	    <span class="label">W</span>
 	    <input v-model="meta.west" type="number" min="-180" max="180" step="any" 
@@ -70,6 +71,9 @@ export default {
     }
   },
   methods: {
+    draw () {
+      this.$emit('draw', {id: this.id, bbox: this.meta})
+    },
     remove () {
       this.$emit('remove', this.id)
     },
@@ -102,9 +106,7 @@ export default {
 }
 </script>
 <style scoped>
-div.bbox {
-  margin-bottom: 5px;
-}
+
 div.bbox span.label {
   min-width: 5px;
   margin-left: 10px;
@@ -114,27 +116,12 @@ div.bbox span.label.premium {
   vertical-align:baseline;
   margin-left:0;
 }
-div.bbox-content {
- position:relative;
- display:inline-block;
- border: 1px solid grey;
-border-radius: 5px;
-background: #F5F5F5;
-padding: 5px 4px;
-}
+
 div.bbox input[type="number"] {
   max-width:100px;
 }
 div.bbox input[type="number"]:invalid {
   outline: 1px solid red;
 }
-span.circle {
-  display:inline-block;
-  min-width:20px;
-  text-align:center;
-  border: 1px solid black;
-  border-radius: 10px;
-  margin-left: -40px;
-  vertical-align:top;
-}
+
 </style>

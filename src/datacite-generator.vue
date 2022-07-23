@@ -155,7 +155,7 @@ export default {
 	             var title = xmlDoc.createElement('title')
 	            
 	             title.appendChild(xmlDoc.createTextNode(this.metadata.title[lang]))
-	             title.setAttribute('xml:lang', lang === 'fr' ? 'fr-FR':'en-US')
+	             title.setAttribute('xml:lang', lang)
 	             if (lang !== this.metadata.mainLang && Object.keys(this.metadata.title).length > 1) 
 	                title.setAttribute('titleType', 'TranslatedTitle')
 	             titles.appendChild(title)
@@ -174,11 +174,18 @@ export default {
             )
           }
           break
-        case 'mainLang':
-          var lg = xmlDoc.createElement('language')
-           lg.appendChild(xmlDoc.createTextNode(this.metadata.mainLang === 'fr' ? 'fr-FR': 'en-US'))
-           xmlDoc.documentElement.appendChild(lg)
-           break
+//         case 'mainLang':
+//           var lg = xmlDoc.createElement('language')
+//            lg.appendChild(xmlDoc.createTextNode(this.metadata.mainLang))
+//            xmlDoc.documentElement.appendChild(lg)
+//            break
+        case 'language':
+          if (this.metadata.language) {
+	          var lg = xmlDoc.createElement('language')
+	          lg.appendChild(xmlDoc.createTextNode(this.metadata.language))
+	          xmlDoc.documentElement.appendChild(lg)
+          }
+          break
         case 'resourceType':
           var rt = xmlDoc.createElement('resourceType')
           rt.setAttribute('resourceTypeGeneral', 'Collection')
@@ -211,7 +218,7 @@ export default {
 	            this.metadata.langs.forEach(function (lang) {
 	              if (descriptions[lang]) {
 		              var nd = self.createNode('description', descriptions[lang], xmlDoc)
-		              nd.setAttribute('xml:lang', lang === 'fr' ? 'fr-FR':'en-US')
+		              nd.setAttribute('xml:lang', lang)
 		              nd.setAttribute('descriptionType', key)
 		              node.appendChild(nd)
 		              add = true
