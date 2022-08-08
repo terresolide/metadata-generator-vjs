@@ -18,9 +18,7 @@
        </li>
     </ul>
     </div>
-    <div style="margin-bottom:10px">
-      <i class="fa fa-warning"></i> Certaines propriétés du format ne sont pas utilisées (comme subtitle...)
-    </div>
+  
     <div>
       Fiche Générée <input type="button" value="Exporter" @click="exportXML"/>
     </div>

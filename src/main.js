@@ -9,8 +9,8 @@ Vue.config.productionTip = false
 import vueCustomElement from 'vue-custom-element';
 Vue.use(vueCustomElement)
 
-//import VueResource from 'vue-resource';
-//Vue.use(VueResource);
+import VueResource from 'vue-resource';
+Vue.use(VueResource);
 
 //pour la traduction 
 //import VueI18n from 'vue-i18n';

@@ -2,7 +2,7 @@
  <div>
   
    <div class="header block-button" > 
-     
+     <h3 style="margin-top:0;">Formulaire</h3>
      <div class="header-right">
        <div class="iso" >
        <span class="mro" ></span>
@@ -18,36 +18,13 @@
        </div>
     </div>
     <div class="header-left" >
-      <div ><meta-mro value="M"></meta-mro> Mandatory/obligatoire</div>
+      <div><meta-mro value="M"></meta-mro> Mandatory/obligatoire</div>
       <div><meta-mro value="R"></meta-mro> Recommandé</div>
       <div><meta-mro value="O"></meta-mro> Optionnel</div>
     </div>
-     <div style="clear:both;margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 
-     vous pouvez exporter les métadonnées au format JSON et les ré-importer quand vous le souhaitez.</em></div>
-  
-	   <div>
-		     <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
-		     Exporter les métadonnées dans le format JSON
-		     </div>
-		     <input type="button"  @click="exportJSON" value="Exporter">
-	   </div>
-	   <div>
-		 <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
-		   Importer des métadonnées au format JSON
-		   </div>
-		   <input type="button" for="upload" value="Importer" @click="$el.querySelector('#upload').click()">
-		   <input id="upload" type=file   accept="application/json" style="visibility:hidden" @change="readJSON" name="files[]" size=30>
-	   </div>
-	   <div style="margin: 10px 5px;">
-	      <div>Charger un exemple:
-		     <ul>
-		       <li></li>
-		       <li></li>
-		     </ul>
-	     </div>
-	     <div>Remettre les valeurs à zéro <input type="button" value="Initialiser" @click="initialize" /> </div>
-      
-	   </div>
+	  <div style="clear:both;">
+	    <div>Remettre les valeurs à zéro <input type="button" value="Initialiser" @click="initialize" /> </div>
+	  </div>
   </div>
     <div class="block-prop">
      <meta-mro value="M"></meta-mro>
@@ -252,14 +229,14 @@
      <div class="properties">
        <div class="simple">
            <label>Date début</label>
-           <input type="date" v-model="meta.temporalExtent.start" />
+           <input type="date" v-model="meta.temporalExtent.start" required />
            <meta-mro value="M"></meta-mro>
        </div>
        <div class="simple">
            <label>Date fin</label>
            <input type="date" v-model="meta.temporalExtent.end" />
            <meta-mro value="O"></meta-mro>
-           <formater-tooltip description="Laissez vide, si les données/produits sont créés en continue">
+           <formater-tooltip description="Laissez vide, si les données/produits sont mesurées en continue">
            </formater-tooltip>
        </div>
      </div>
@@ -361,6 +338,7 @@
    <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Conditions d'accès et d'utilisation
+     <formater-tooltip description="Décochez les conditions d'accès et d'utilisation si vous voulez saisir une license ou vos propres conditions"></formater-tooltip>
      </label>
      <div class="properties">
        <table>
@@ -414,11 +392,11 @@
  </div>
 </template>
 <script>
-import MetadataIdentifier from './metadata-identifier.vue'
+const MetadataIdentifier = () => import('./metadata-identifier.vue')
 import MetadataContact from './metadata-contact.vue'
 import MetadataDate from './metadata-date.vue'
 const MetadataFormat = () => import('./metadata-format.vue')
-import MetadataBbox from './metadata-bbox.vue'
+const MetadataBbox = () => import('./metadata-bbox.vue')
 const MetadataKeyword = () => import('./metadata-keyword.vue')
 const MetadataLicense = () => import('./metadata-license.vue')
 const MetadataLink = () => import('./metadata-link.vue')
@@ -445,6 +423,12 @@ export default {
     MetaMro,
     DrawBbox
   },
+  props: {
+    metadata: {
+      type: Object,
+      default: null
+    }
+  },
   data () {
     return {
       bboxId: -1,
@@ -470,9 +454,17 @@ export default {
     }
   },
   watch: {
-//     meta (newvalue) {
-//       console.log(newvalue)
-//     }
+     metadata: {
+       handler (newvalue) {
+         if (newvalue && newvalue.langs && newvalue.title) {
+           this.meta = Object.assign(this.defaultMeta(), newvalue)
+         } else {
+           this.meta = this.defaultMeta()
+         }
+         this.change()
+       },
+       deep: true
+     }
   },
   created () {
     this.initialize()
@@ -495,7 +487,7 @@ export default {
         },
         mainLang: 'fr',
         language: 'en',
-        resourceType: '',
+        resourceType: 'Collection of',
         identifiers: [],
         links: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
@@ -515,9 +507,10 @@ export default {
       }
     },
     initialize () {
-      this.meta = this.defaultMeta()
-      this.addCreator()
-      this.change()
+	      this.meta = this.defaultMeta()
+	      this.addCreator()
+	      this.$emit('initialize')
+	      this.change()
     },
     drawBbox (bbox) {
       this.bboxId = bbox.id
@@ -658,18 +651,18 @@ export default {
       this.meta.rights.others[obj.id] = obj.right
       this.change()
     },
-    exportJSON () {
-        let dataStr = JSON.stringify(this.meta);
-        let dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        let date = moment()
-        let exportFileDefaultName = 'metadata.' + date.format('YYYYMMDD') + '.json';
+//     exportJSON () {
+//         let dataStr = JSON.stringify(this.meta);
+//         let dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+//         let date = moment()
+//         let exportFileDefaultName = 'metadata.' + date.format('YYYYMMDD') + '.json';
 
-        let linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-        linkElement.remove()
-    },
+//         let linkElement = document.createElement('a');
+//         linkElement.setAttribute('href', dataUri);
+//         linkElement.setAttribute('download', exportFileDefaultName);
+//         linkElement.click();
+//         linkElement.remove()
+//     },
     deploy (event) {
       var node = event.target
       while (node.tagName.toLowerCase() !== 'label') {
@@ -692,26 +685,26 @@ export default {
       }
       
     },
-    readJSON (evt) {
-      let files = evt.target.files; // FileList object
+//     readJSON (evt) {
+//       let files = evt.target.files; // FileList object
 
-      // use the 1st file from the list
-      let f = files[0];
+//       // use the 1st file from the list
+//       let f = files[0];
       
-      let reader = new FileReader();
-      var self = this
-      // Closure to capture the file information.
-      reader.onload = function(theFile) {
-        var meta = JSON.parse(reader.result)
-        if (meta.langs && meta.title) {
-          self.meta = Object.assign(self.meta, meta)
-          self.change()
-        }
-      };
+//       let reader = new FileReader();
+//       var self = this
+//       // Closure to capture the file information.
+//       reader.onload = function(theFile) {
+//         var meta = JSON.parse(reader.result)
+//         if (meta.langs && meta.title) {
+//           self.meta = Object.assign(self.meta, meta)
+//           self.change()
+//         }
+//       };
 
-        // Read in the image file as a data URL.
-        reader.readAsText(f);
-    },
+//         // Read in the image file as a data URL.
+//         reader.readAsText(f);
+//     },
     removeBbox (id) {
       this.meta.geoLocation.splice(id, 1)
       this.change()

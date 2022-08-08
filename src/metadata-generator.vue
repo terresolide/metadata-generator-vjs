@@ -1,16 +1,36 @@
 <template>
  <div class="metadata-generator">
    <h1>Générateur de métadonnées Datacite et ISO19139 pour les collections ForM@Ter</h1>
+   <div>
+     <div style="clear:both;margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 
+     vous pouvez exporter les métadonnées au format JSON et les ré-importer quand vous le souhaitez.</em></div>
+  
+     <div>
+         <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
+         Exporter les métadonnées dans le format JSON
+         </div>
+         <input type="button"  @click="exportJSON" value="Exporter">
+     </div>
+     <div>
+     <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
+       Importer des métadonnées au format JSON
+       </div>
+       <input type="button" for="upload" value="Importer" @click="$el.querySelector('#upload').click()">
+       <input id="upload" type=file   accept="application/json" style="visibility:hidden" @change="readJSON" name="files[]" size=30>
+     </div>
+      <metadata-examples @change="changeMetadata"></metadata-examples>
+     <div @click="changeGenerator" style="display:inline-block;width:48%;vertical-align:top;">
+    Passer au  format 
+    <span v-if="generator === 'datacite'">ISO 19139</span> 
+    <span v-else>Datacite 4.4</span>
+  </div>
+   </div>
    <div  style="float:left;width:calc(50% - 5px);">
-   <metadata-form @change="initMetadata"></metadata-form>
+   <metadata-form :metadata="defaultMeta" @change="initMetadata" @initialize="initDefaultMeta"></metadata-form>
 
   </div>
   <div style="width:calc(50% - 5px);float:left;margin-left:10px;">
-  <div @click="changeGenerator">
-	  Passer au  format 
-	  <span v-if="generator === 'datacite'">ISO 19139</span> 
-	  <span v-else>Datacite 4.4</span>
-  </div>
+  
   <div v-if="generator === 'datacite'">
     <datacite-generator :metadata="metadata"></datacite-generator>
   </div>
@@ -24,26 +44,29 @@
 <script> 
 
 import MetadataForm from './metadata-form.vue'
+import MetadataExamples from './metadata-examples.vue'
 import DataciteGenerator from './datacite-generator.vue'
 const IsoGenerator = () => import('./iso-generator.vue')
+import moment from 'moment'
+
 export default {
   name: 'MetadataGenerator',
   components: {
     MetadataForm,
+    MetadataExamples,
     DataciteGenerator,
     IsoGenerator
-    // ViewXml
   },
-  props: {
-    xsd: {
-      type: String,
-      default: null
-    }
-  },
+//   props: {
+//     xsd: {
+//       type: String,
+//       default: null
+//     }
+//   },
   data () {
     return {
-      xml: null,
       metadata: {},
+      defaultMeta: null,
       generator: 'datacite'
     }
   },
@@ -56,8 +79,10 @@ export default {
   },
   methods: {
     initMetadata (value) {
-      console.log('meta change')
       this.metadata = value
+    },
+    initDefaultMeta (value) {
+      this.defaultMeta = null
     },
     changeGenerator () {
       if (this.generator === 'datacite') {
@@ -65,6 +90,40 @@ export default {
       } else {
         this.generator = 'datacite'
       }
+    },
+    exportJSON () {
+      let dataStr = JSON.stringify(this.metadata);
+      let dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      let date = moment()
+      let exportFileDefaultName = 'metadata.' + date.format('YYYYMMDD') + '.json';
+      let linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      linkElement.remove()
+	  },
+	  changeMetadata (meta) {
+	    this.defaultMeta = meta
+	   
+	  },
+    readJSON (evt) {
+      let files = evt.target.files; // FileList object
+
+      // use the 1st file from the list
+      let f = files[0];
+      
+      let reader = new FileReader();
+      var self = this
+      // Closure to capture the file information.
+      reader.onload = function(theFile) {
+        var meta = JSON.parse(reader.result)
+        if (meta) {
+          self.defaultMeta = meta
+        }
+      };
+
+        // Read in the image file as a data URL.
+        reader.readAsText(f);
     }
   }
 }
