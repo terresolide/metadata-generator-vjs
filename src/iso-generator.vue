@@ -1,7 +1,7 @@
 <template>
 <span>
   <div class="header">
-    <h3 style="margin-top:0;">Format Datacite 4.4</h3>
+    <h3 style="margin-top:0;">Format ISO19139</h3>
     <div>
     Pour plus d'information consultez la documentation 
     sur: 
@@ -34,7 +34,7 @@
 import ViewXml from 'v-xml-tree'
 import moment from 'moment'
 export default {
-  name: 'DataciteGenerator',
+  name: 'IsoGenerator',
   components: {
     ViewXml
   },
@@ -52,13 +52,14 @@ export default {
   watch: {
     metadata: {
       handler (newvalue) {
-	      this.createDataCite()
+	      console.log('META CHANGE')
+	      this.createISO19139()
       },
       deep: true
     }
   },
   created () {
-    this.createDataCite()
+    this.createISO19139()
   },
   methods: {
     exportXML () {
@@ -74,7 +75,7 @@ export default {
         linkElement.click();
         linkElement.remove()
     },
-    createDataCite () {
+    createISO19139 () {
       console.log('create')
       // var xmlDoc = new Document()null;
       const parser = new DOMParser();
@@ -87,10 +88,10 @@ export default {
         switch(key) {
         case 'doi':
            if (this.metadata.doi) {
-             var doi = this.xmlDoc.createElement('identifier')
-             doi.setAttribute('indentifierType', 'DOI')
-             doi.appendChild(this.xmlDoc.createTextNode(this.metadata.doi))
-             this.xmlDoc.documentElement.appendChild(doi)
+	           var doi = this.xmlDoc.createElement('identifier')
+	           doi.setAttribute('indentifierType', 'DOI')
+	           doi.appendChild(this.xmlDoc.createTextNode(this.metadata.doi))
+	           this.xmlDoc.documentElement.appendChild(doi)
            }
            break
         case 'creators':
@@ -152,13 +153,13 @@ export default {
            for (var i in this.metadata.langs) {
              var lang = this.metadata.langs[i]
              if (this.metadata.title[lang]) {
-               var title = this.xmlDoc.createElement('title')
-              
-               title.appendChild(this.xmlDoc.createTextNode(this.metadata.title[lang]))
-               title.setAttribute('xml:lang', lang)
-               if (lang !== this.metadata.mainLang && Object.keys(this.metadata.title).length > 1) 
-                  title.setAttribute('titleType', 'TranslatedTitle')
-               titles.appendChild(title)
+	             var title = this.xmlDoc.createElement('title')
+	            
+	             title.appendChild(this.xmlDoc.createTextNode(this.metadata.title[lang]))
+	             title.setAttribute('xml:lang', lang)
+	             if (lang !== this.metadata.mainLang && Object.keys(this.metadata.title).length > 1) 
+	                title.setAttribute('titleType', 'TranslatedTitle')
+	             titles.appendChild(title)
              }
            }
            break
@@ -181,9 +182,9 @@ export default {
 //            break
         case 'language':
           if (this.metadata.language) {
-            var lg = this.xmlDoc.createElement('language')
-            lg.appendChild(this.xmlDoc.createTextNode(this.metadata.language))
-            this.xmlDoc.documentElement.appendChild(lg)
+	          var lg = this.xmlDoc.createElement('language')
+	          lg.appendChild(this.xmlDoc.createTextNode(this.metadata.language))
+	          this.xmlDoc.documentElement.appendChild(lg)
           }
           break
         case 'resourceType':
@@ -227,50 +228,19 @@ export default {
           }
           break
           case 'links':
-            var rootId = this.xmlDoc.createElement('relatedIdentifiers')
-            var rootItem = this.xmlDoc.createElement('relatedItems')
-            var addId = false
-            var addItem = false
+            var root = this.xmlDoc.createElement('relatedIdentifiers')
+            var add = false
             this.metadata.links.forEach(function (link) {
-              console.log(link)
-              if (link && link.url) {
-                if (link.title[link.lang]) {
-                  var item = self.xmlDoc.createElement('relatedItem')
-                  item.setAttribute('relationType', link.relation)
-                  var nLink = self.createNode('relatedItemIdentifier', link.url.trim())
-                  nLink.setAttribute('relatedItemIdentifierType', link.type)
-                  item.appendChild(nLink)
-                  var titles = self.xmlDoc.createElement('titles')
-                  var title = self.createNode('title', link.title[link.lang])
-                  title.setAttribute('xml:lang', link.lang)
-                  titles.appendChild(title)
-                  // add translated title
-                  self.metadata.langs.forEach(function(lg) {
-                    if (link.title[lg] && lg !== link.lang) {
-                      title = self.createNode('title', link.title[lg])
-                      title.setAttribute('xml:lang', lg)
-                      title.setAttribute('titleType', 'TranslatedTitle')
-                      titles.appendChild(title)
-                    }
-                  })
-                  
-                  item.appendChild(titles)
-                  rootItem.appendChild(item)
-                  addItem = true
-                } else {
-	                var nLink = self.createNode('relatedIdentifier', link.url.trim())
-	                nLink.setAttribute('relatedIdentifierType', link.type)
-	                nLink.setAttribute('relationType', link.relation)
-	                rootId.appendChild(nLink)
-	                addId = true
-                }
-              }
+	            if (link && link.url) {
+	              var nLink = self.createNode('relatedIdentifier', link.url.trim())
+	              nLink.setAttribute('relatedIdentifierType', link.type)
+	              nLink.setAttribute('relationType', link.relation)
+	              root.appendChild(nLink)
+	              add = true
+	            }
             })
-            if (addId) {
-              this.xmlDoc.documentElement.appendChild(rootId)
-            }
-            if (addItem) {
-              this.xmlDoc.documentElement.appendChild(rootItem)
+            if (add) {
+              this.xmlDoc.documentElement.appendChild(root)
             }
             break
           case 'formats':
@@ -293,15 +263,15 @@ export default {
             var add = false
             for(var key in this.metadata.descriptions) {
               var descriptions = this.metadata.descriptions[key]
-              this.metadata.langs.forEach(function (lang) {
-                if (descriptions[lang]) {
-                  var nd = self.createNode('description', descriptions[lang])
-                  nd.setAttribute('xml:lang', lang)
-                  nd.setAttribute('descriptionType', key)
-                  node.appendChild(nd)
-                  add = true
-                }
-              })
+	            this.metadata.langs.forEach(function (lang) {
+	              if (descriptions[lang]) {
+		              var nd = self.createNode('description', descriptions[lang])
+		              nd.setAttribute('xml:lang', lang)
+		              nd.setAttribute('descriptionType', key)
+		              node.appendChild(nd)
+		              add = true
+	              }
+	            })
             }
             if (add) {
               this.xmlDoc.documentElement.appendChild(node)
@@ -310,7 +280,7 @@ export default {
           case 'rights':
             var node = this.xmlDoc.createElement('rightsList')
             var add = false
-            if (!this.metadata.condition.use && this.metadata.rights.license && this.metadata.rights.license.name) {
+            if (this.metadata.rights.license && this.metadata.rights.license.name) {
               var license = this.createNode('rights', this.metadata.rights.license.name)
               if (this.metadata.rights.license.identifier) {
                 license.setAttribute('rightsIdentifier', this.metadata.rights.license.identifier)
@@ -324,20 +294,17 @@ export default {
             if (this.metadata.rights.others.length > 0) {
               var self = this
               this.metadata.rights.others.forEach(function (rg) {
-                console.log(rg.type)
-                if (!self.metadata.condition[rg.type]) {
-	                self.metadata.langs.forEach(function (lg) {
-	                  if (rg.title[lg]) {
-	                    var nd = self.createNode('rights', rg.title[lg])
-	                    nd.setAttribute('xml:lang', lg)
-	                    if (rg.url[lg]) {
-	                      nd.setAttribute('rigthsURI', rg.url[lg])
-	                    }
-	                    node.appendChild(nd)
-	                    add = true
-	                  }
-	                })
-                }
+                self.metadata.langs.forEach(function (lg) {
+                  if (rg.title[lg]) {
+                    var nd = self.createNode('rights', rg.title[lg])
+                    nd.setAttribute('xml:lang', lg)
+                    if (rg.url[lg]) {
+                      nd.setAttribute('rigthsURI', rg.url[lg])
+                    }
+                    node.appendChild(nd)
+                    add = true
+                  }
+                })
               })
             }
             if (add) {

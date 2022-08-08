@@ -1,7 +1,8 @@
 <template>
-<div v-if="description" style="position:relative;display:inline-block;vertical-align:baseline;">
+<div v-if="description" style="position:relative;display:inline-block;vertical-align:baseline;" >
       <span class="fa fa-info-circle" @click="showTooltip($event)"></span>
-      <div class="fmt-tooltip" @click="hideTooltip($event)" v-html="description"></div>
+      <div class="fmt-tooltip" :style="{width: width + 'px'}"
+      @click="hideTooltip($event)" v-html="description"></div>
 </div> 
 </template>
 <script>
@@ -11,6 +12,10 @@ export default {
     description: {
       type: String,
       default: null
+    },
+    width: {
+      type: Number,
+      default: 250
     }
   },
   methods: {

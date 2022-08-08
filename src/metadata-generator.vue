@@ -6,8 +6,17 @@
 
   </div>
   <div style="width:calc(50% - 5px);float:left;margin-left:10px;">
-  <datacite-generator :metadata="metadata"></datacite-generator>
-
+  <div @click="changeGenerator">
+	  Passer au  format 
+	  <span v-if="generator === 'datacite'">ISO 19139</span> 
+	  <span v-else>Datacite 4.4</span>
+  </div>
+  <div v-if="generator === 'datacite'">
+    <datacite-generator :metadata="metadata"></datacite-generator>
+  </div>
+  <div v-else >
+    <iso-generator :metadata="metadata"></iso-generator>
+  </div>
   </div>
  
 </div>
@@ -16,12 +25,13 @@
 
 import MetadataForm from './metadata-form.vue'
 import DataciteGenerator from './datacite-generator.vue'
-;
+const IsoGenerator = () => import('./iso-generator.vue')
 export default {
   name: 'MetadataGenerator',
   components: {
     MetadataForm,
     DataciteGenerator,
+    IsoGenerator
     // ViewXml
   },
   props: {
@@ -33,7 +43,8 @@ export default {
   data () {
     return {
       xml: null,
-      metadata: {}
+      metadata: {},
+      generator: 'datacite'
     }
   },
   created () {
@@ -47,6 +58,13 @@ export default {
     initMetadata (value) {
       console.log('meta change')
       this.metadata = value
+    },
+    changeGenerator () {
+      if (this.generator === 'datacite') {
+        this.generator = 'iso'
+      } else {
+        this.generator = 'datacite'
+      }
     }
   }
 }

@@ -80,7 +80,8 @@ module.exports = {
     }
   },
   devServer: {
-    historyApiFallback: true
+    historyApiFallback: true,
+    liveReload: true
   },
   performance: {
     hints: false

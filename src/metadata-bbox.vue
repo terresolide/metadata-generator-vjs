@@ -1,7 +1,7 @@
 <template>
   <div class="block-element bbox">
     <span class="circle">{{id + 1 }}</span>
-    <div class="element-content large">
+    <div class="element-content large" :class="{selected: selected}">
      <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
       <div style="margin-bottom:8px;" >
          <span class="label premium" >Toponyme</span> 
@@ -11,7 +11,7 @@
       <div >
          <span class="label premium">Bounding Box</span>
          <meta-mro value="M"></meta-mro>
-       <!--    <input type="button" value="Dessiner" @click="draw" /> -->
+         <input type="button" value="Dessiner" @click="draw" />
       </div>
 	    <span class="label">W</span>
 	    <input v-model="meta.west" type="number" min="-180" max="180" step="any" 
@@ -44,6 +44,10 @@ export default {
       type: Number,
       default: -1
     },
+    selected: {
+      type: Boolean,
+      default: false
+    },
     erasable: {
       type: Boolean,
       default: false
@@ -54,12 +58,15 @@ export default {
     },
     bbox: {
       type: Object,
-      default: () => {return {west: null, east: null, north: null, south: null}}
+      default: () => {return {name: null, west: null, east: null, north: null, south: null}}
     }
   },
   watch: {
-    bbox (newvalue) {
-      this.meta = newvalue
+    bbox: {
+      handler (newvalue) {
+        this.meta = newvalue
+      },
+      deep:true
     }
   },
   created () {
@@ -106,7 +113,9 @@ export default {
 }
 </script>
 <style scoped>
-
+div.element-content.selected {
+  background: #f9eeee;
+}
 div.bbox span.label {
   min-width: 5px;
   margin-left: 10px;

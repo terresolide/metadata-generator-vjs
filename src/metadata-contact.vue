@@ -182,7 +182,6 @@
      },
      addIdentifier () {
        this.$set(this.meta, 'identifier', {type:'', identifier:null})
-       this.meta.identifiers.push({})
      },
      changeAffiliation (obj) {
        this.meta.affiliations[obj.id] = obj.affiliation
