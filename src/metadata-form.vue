@@ -22,8 +22,7 @@
       <div><meta-mro value="R"></meta-mro> Recommandé</div>
       <div><meta-mro value="O"></meta-mro> Optionnel</div>
     </div>
-	  <div style="clear:both;">
-	    <div>Remettre les valeurs à zéro <input type="button" value="Initialiser" @click="initialize" /> </div>
+	  <div style="clear:both;height:0;">
 	  </div>
   </div>
     <div class="block-prop">
@@ -509,7 +508,6 @@ export default {
     initialize () {
 	      this.meta = this.defaultMeta()
 	      this.addCreator()
-	      this.$emit('initialize')
 	      this.change()
     },
     drawBbox (bbox) {

@@ -2,43 +2,53 @@
  <div class="metadata-generator">
    <h1>Générateur de métadonnées Datacite et ISO19139 pour les collections ForM@Ter</h1>
    <div>
-     <div style="clear:both;margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 
-     vous pouvez exporter les métadonnées au format JSON et les ré-importer quand vous le souhaitez.</em></div>
-  
-     <div>
-         <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
-         Exporter les métadonnées dans le format JSON
-         </div>
-         <input type="button"  @click="exportJSON" value="Exporter">
-     </div>
-     <div>
-     <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
-       Importer des métadonnées au format JSON
-       </div>
-       <input type="button" for="upload" value="Importer" @click="$el.querySelector('#upload').click()">
-       <input id="upload" type=file   accept="application/json" style="visibility:hidden" @change="readJSON" name="files[]" size=30>
-     </div>
-      <metadata-examples @change="changeMetadata"></metadata-examples>
-     <div @click="changeGenerator" style="display:inline-block;width:48%;vertical-align:top;">
-    Passer au  format 
-    <span v-if="generator === 'datacite'">ISO 19139</span> 
-    <span v-else>Datacite 4.4</span>
-  </div>
+     <div style="margin-bottom:10px;">
+	     <div style="margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 
+	     vous pouvez exporter les métadonnées au format JSON et les ré-importer quand vous le souhaitez.</em>
+	     </div>
+		   <div>
+		       <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
+		       Exporter les métadonnées dans le format JSON
+		       </div>
+		       <input type="button"  @click="exportJSON" value="Exporter">
+		   </div>
+		   <div>
+		       <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
+		         Importer des métadonnées au format JSON
+		       </div>
+		       <input type="button" for="upload" value="Importer" @click="$el.querySelector('#upload').click()">
+		       <input id="upload" type=file   accept="application/json" style="visibility:hidden" @change="readJSON" name="files[]" size=30>
+		   </div>
+	   </div>
+	   <div style="display:inline-block;width:50%;padding: 0 5px;">
+		   <metadata-examples ref="example" @change="changeMetadata"></metadata-examples>
+		   <h3 style="margin:0;vertical-align:baseline;">
+			    Remettre les valeurs à zéro 
+			    <input type="button" value="Initialiser" @click="initDefaultMeta" /> 
+			 </h3>
+		 </div>
+	   <div  style="display:inline-block;width:48%;vertical-align:top;">
+	     <h3 style="margin:0;vertical-align:baseline;">Changer de format 
+			    <span v-if="generator === 'datacite'">
+			       <input type="button" value="ISO 19139" @click="changeGenerator" />
+			    </span> 
+			    <span v-else>
+			        <input type="button" value="Datacite 4.4" @click="changeGenerator" />
+			    </span>
+	     </h3>
+	   </div>
    </div>
-   <div  style="float:left;width:calc(50% - 5px);">
-   <metadata-form :metadata="defaultMeta" @change="initMetadata" @initialize="initDefaultMeta"></metadata-form>
-
+   <div  style="float:left;width:calc(50% - 5px);margin-top:10px;">
+     <metadata-form ref="form" :metadata="defaultMeta" @change="initMetadata" ></metadata-form>
   </div>
-  <div style="width:calc(50% - 5px);float:left;margin-left:10px;">
-  
-  <div v-if="generator === 'datacite'">
-    <datacite-generator :metadata="metadata"></datacite-generator>
+  <div style="width:calc(50% - 5px);float:left;margin-left:10px;margin-top:10Px;">
+	  <div v-if="generator === 'datacite'">
+	    <datacite-generator :metadata="metadata"></datacite-generator>
+	  </div>
+	  <div v-else >
+	    <iso-generator :metadata="metadata"></iso-generator>
+	  </div>
   </div>
-  <div v-else >
-    <iso-generator :metadata="metadata"></iso-generator>
-  </div>
-  </div>
- 
 </div>
 </template>
 <script> 
@@ -83,6 +93,8 @@ export default {
     },
     initDefaultMeta (value) {
       this.defaultMeta = null
+      this.$refs.form.initialize()
+      this.$refs.example.reset()
     },
     changeGenerator () {
       if (this.generator === 'datacite') {

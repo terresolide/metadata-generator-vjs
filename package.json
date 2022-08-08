@@ -1,6 +1,6 @@
 {
   "name": "metadata-generator-vjs",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Test metadata generator",
   "production": {
     "url": "https://cdn.jsdelivr.net/gh/terresolide"

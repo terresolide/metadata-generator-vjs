@@ -1,13 +1,12 @@
 <template>
- <div style="margin: 10px 5px;width:50%;display:inline-block;">
-     <div>Charger un exemple:
-       <ul>
-         <li v-for="example, id in examples" >
-             <input type="checkbox" :checked="selected === id" @click="load(id)"/> {{example.name}}
-         </li>
-       </ul>
-     </div>
-</div>
+  <div>
+    <h3>Charger un exemple</h3>
+    <ul>
+      <li v-for="example, id in examples" >
+          <input type="checkbox" :checked="selected === id" @click="load(id)"/> {{example.name}}
+      </li>
+    </ul>
+  </div>
 </template>
 <script>
 const examples = 
@@ -22,6 +21,9 @@ export default {
     }
   },
   methods: {
+    reset () {
+      this.selected = null
+    },
     load(id) {
       if (this.selected === id) {
         this.selected = null
@@ -43,3 +45,13 @@ export default {
   }
 }
 </script>
+<style scoped>
+ul {
+  list-style-type: none;
+  margin: 3px 0;
+  padding-left: 20px;
+}
+h3 {
+  margin: 0;
+}
+</style>
