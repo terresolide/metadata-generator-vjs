@@ -29,7 +29,7 @@
 </span>
 </template>
 <script>
-import ViewXml from 'v-xml-tree'
+import ViewXml from './XmlTree.vue'
 import moment from 'moment'
 export default {
   name: 'DataciteGenerator',

@@ -104,7 +104,7 @@
    </div>
     <div class="block-prop" >
     <meta-mro value="M"></meta-mro>
-     <label  @click="deploy($event)"><i class="fa"></i> Identifiant
+     <label  @click="deploy($event)"><i class="fa"></i> Identifiant de la collection
      <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
      Pour l'<b>ISO19139</b>, au moins un identifiant <b>unique</b>, quel qu'il soit, est attendu">
      </formater-tooltip>

@@ -23,12 +23,12 @@
     </div>
   </div>
   <div class="xml-content">
-    <view-xml  v-if="xmlDoc" :element="xmlDoc.documentElement"></view-xml>
+    <view-xml  v-if="xmlDoc" :element="xmlDoc.documentElement" :deployed="false" :depth="0"></view-xml>
   </div>
 </span>
 </template>
 <script>
-import ViewXml from 'v-xml-tree'
+import ViewXml from './XmlTree.vue'
 import moment from 'moment'
 export default {
   name: 'IsoGenerator',
@@ -85,300 +85,78 @@ export default {
         linkElement.remove()
     },
     createISO19139 () {
-      console.log('create')
       // var xmlDoc = new Document()null;
       var self = this
       const parser = new DOMParser();
-        this.xmlDoc = parser.parseFromString('<gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"></gmd:MD_Metadata>', "text/xml");
-        var identifier = this.xmlDoc.createElement('gmd:fileIdentifier')
-        var code = this.createNode('gco:CharacterString', this.metadata.uuid)
-        identifier.appendChild(code)
-        
-        this.xmlDoc.documentElement.appendChild(identifier)
-        // metadata language
-        var lang = this.xmlDoc.createElement('gmd:language')
-        lang.appendChild(this.createNodeCode('gmd:LanguageCode', 'language', this.metadata.mainLang === 'fr' ? 'fre' : 'eng', ''))
-        this.xmlDoc.documentElement.appendChild(lang)
-        // add encodage
-        var charset = this.xmlDoc.createElement('gmd:characterSet')
-        charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', ''))
-        this.xmlDoc.documentElement.appendChild(charset)
-        // hierarchyLevel
-        var hierarchy = this.xmlDoc.createElement('gmd:hierarchyLevel')
-        hierarchy.appendChild(this.createNodeCode('gmd:MD_ScopeCode','scope', 'series','series'))
-        this.xmlDoc.documentElement.appendChild(hierarchy)
-         // metadata contact
-        var contact = this.xmlDoc.createElement('gmd:contact')
-        var resp = this.createContact(this.metadata.metaContact)
-        // add date stamp
-        var date = this.xmlDoc.createElement('gmd:dateStamp')
-        var now = new Date()
-        var time = this.createNode('gco:DateTime', moment.utc(now).format())
-        date.appendChild(time)
-        this.xmlDoc.documentElement.appendChild(date)
-        // standard name et varsion
-        var std = this.xmlDoc.createElement('gmd:metadataStandardName')
-        var code = this.createNode('gco:CharacterString', 'ISO 19115:3/19139')
-        std.appendChild(code)
-        this.xmlDoc.documentElement.appendChild(std)
-        
-         var std = this.xmlDoc.createElement('gmd:metadataStandardVersion')
-        var code = this.createNode('gco:CharacterString', '1.0')
-        std.appendChild(code)
-        this.xmlDoc.documentElement.appendChild(std)
-        // all metadata language
-        if (this.metadata.langs.length > 1) {
-          var langs = this.xmlDoc.createElement('gmd:locale')
-          this.metadata.langs.forEach(function (lang) {
-            var locale = self.xmlDoc.createElement('gmd:PT_Locale')
-            locale.setAttribute('id', lang.toUpperCase())
-            var lgCode = self.xmlDoc.createElement('gmd:languageCode')
-            lgCode.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', lang === 'fr' ? 'fre' : 'eng', ''))
-            locale.appendChild(lgCode)
-            var charset = self.xmlDoc.createElement('gmd:characterEncoding')
-            charset.appendChild(self.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', ''))
-            locale.appendChild(charset)
-            langs.appendChild(locale)
-          })
-          this.xmlDoc.documentElement.appendChild(langs)
-        }
-    
-         
-       
-       // var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
-        contact.appendChild(resp)
-//         var org = this.xmlDoc.createElement('gmd:organisationName')
-//         resp.appendChild(org)
-//         var name = this.createNode('gco:CharacterString', this.metadata.metaContact.fullName)
-//         org.appendChild(name)
-        this.xmlDoc.documentElement.appendChild(contact)
-        // add Date
-//       var self = this
-//       for (var key in this.metadata) {
-//         switch(key) {
-//         case 'doi':
-//            if (this.metadata.doi) {
-// 	           var doi = this.xmlDoc.createElement('identifier')
-// 	           doi.setAttribute('indentifierType', 'DOI')
-// 	           doi.appendChild(this.xmlDoc.createTextNode(this.metadata.doi))
-// 	           this.xmlDoc.documentElement.appendChild(doi)
-//            }
-//            break
-//         case 'creators':
-//           this.generateContact('creator', this.metadata.creators)
-       
-//           break
-//         case 'contributors':
-//           this.generateContact('contributor', this.metadata.contributors)
-       
-//           break
-//         case 'dates':
-//           var root = this.xmlDoc.createElement('dates')
-//           var add = false
-//           this.metadata.dates.forEach(function (dt) {
-//             if (dt.date) {
-//               var node = self.createNode('date', dt.date)
-//               node.setAttribute('dateType', dt.type)
-//               if (dt.information) {
-//                 node.setAttribute('dateInformation', dt.information)
-//               }
-//               root.appendChild(node)
-//               add = true
-//             }
-//           })
-//           if (add) {
-//             this.xmlDoc.documentElement.appendChild(root)
-//           }
-//           break
-//         case 'geoLocation':
-//           var root = this.xmlDoc.createElement('geoLocations')
-//           var added = false
-//           this.metadata.geoLocation.forEach(function (location) {
-//             if (location.name || (location.west && location.east && location.south && location.north)) {
-//               var node = self.xmlDoc.createElement('geoLocation')
-//               root.appendChild(node)
-//               if (location.name) {
-//                 var locationPlace = self.createNode('locationPlace',location.name)
-//                 node.appendChild(locationPlace)
-//                 added = true
-//               }
-//               if (location.west && location.east && location.south && location.north) {
-//                 var geoLocationBox = self.xmlDoc.createElement('geoLocationBox')
-//                 node.appendChild(geoLocationBox)
-//                 geoLocationBox.appendChild(self.createNode('westBoundLongitude', location.west))
-//                 geoLocationBox.appendChild(self.createNode('eastBoundLongitude', location.east))
-//                 geoLocationBox.appendChild(self.createNode('southBoundLatitude', location.south))
-//                 geoLocationBox.appendChild(self.createNode('northBoundLatitude', location.north))
-//                 added = true
-//               }
-//             }
-//           })
-//           if (added) {
-//             this.xmlDoc.documentElement.appendChild(root)
-//           }
-//           break
-//         case 'title':
-//            var titles = this.xmlDoc.createElement('titles')
-//            this.xmlDoc.documentElement.appendChild(titles)
-//            for (var i in this.metadata.langs) {
-//              var lang = this.metadata.langs[i]
-//              if (this.metadata.title[lang]) {
-// 	             var title = this.xmlDoc.createElement('title')
-	            
-// 	             title.appendChild(this.xmlDoc.createTextNode(this.metadata.title[lang]))
-// 	             title.setAttribute('xml:lang', lang)
-// 	             if (lang !== this.metadata.mainLang && Object.keys(this.metadata.title).length > 1) 
-// 	                title.setAttribute('titleType', 'TranslatedTitle')
-// 	             titles.appendChild(title)
-//              }
-//            }
-//            break
-//         case 'publisher':
-//           this.xmlDoc.documentElement.appendChild(
-//               this.createNode('publisher', this.metadata.publisher.fullName)
-//           )
-//           break
-//         case 'publicationYear': 
-//           if (this.metadata.publicationYear) {
-//             this.xmlDoc.documentElement.appendChild(
-//                 this.createNode('publicationYear', this.metadata.publicationYear)
-//             )
-//           }
-//           break
-// //         case 'mainLang':
-// //           var lg = xmlDoc.createElement('language')
-// //            lg.appendChild(xmlDoc.createTextNode(this.metadata.mainLang))
-// //            xmlDoc.documentElement.appendChild(lg)
-// //            break
-//         case 'language':
-//           if (this.metadata.language) {
-// // 	          var lg = this.xmlDoc.createElement('gmd:language)
-// // 	          lg.appendChild(this.createNode(this.metadata.language))
-// // 	          this.xmlDoc.documentElement.appendChild(lg)
-//           }
-//           break
-       
-//         case 'subjects':
-//           var count = 0
-//           var subjects = this.xmlDoc.createElement('subjects')
-//           for (var type in this.metadata.subjects) {
-//             for (var index in this.metadata.subjects[type]) {
-//               var subjectList = this.generateSubject(this.metadata.subjects[type][index])
-//               subjectList.forEach(function (node) {
-//                 subjects.appendChild(node)
-//                 count++
-//               })
-//             }
-//           }
-//           if (count > 0) {
-//             this.xmlDoc.documentElement.appendChild(subjects)
-//           }
-//           break;
-//         case 'identifiers':
-//          // if (this.metadata.identifiers.length > 0) {
-//           var node = this.xmlDoc.createElement('alternateIdentifiers')
-//           var add = false
-//           this.metadata.identifiers.forEach(function (id) {
-//             if (id.identifier && id.identifier.trim() && id.type) {
-//               var identifier = self.createNode('alternateIdentifier', id.identifier.trim())
-//               identifier.setAttribute('alternateIdentifierType', id.type)
-//               node.appendChild(identifier)
-//               add = true
-//             }
-//           })
-//           if (add) {
-//             this.xmlDoc.documentElement.appendChild(node)
-//           }
-//           break
-//           case 'links':
-//             var root = this.xmlDoc.createElement('relatedIdentifiers')
-//             var add = false
-//             this.metadata.links.forEach(function (link) {
-// 	            if (link && link.url) {
-// 	              var nLink = self.createNode('relatedIdentifier', link.url.trim())
-// 	              nLink.setAttribute('relatedIdentifierType', link.type)
-// 	              nLink.setAttribute('relationType', link.relation)
-// 	              root.appendChild(nLink)
-// 	              add = true
-// 	            }
-//             })
-//             if (add) {
-//               this.xmlDoc.documentElement.appendChild(root)
-//             }
-//             break
-//           case 'formats':
-//             var node = this.xmlDoc.createElement('formats')
-//             var add = false
-//             var self = this
-//             this.metadata.formats.forEach(function (format) {
-//               if (format && format.length > 0) {
-//                 var nd = self.createNode('format', format)
-//                 node.appendChild(nd)
-//                 add = true
-//               }
-//             })
-//             if (add) {
-//               this.xmlDoc.documentElement.appendChild(node)
-//             }
-//             break
-//           case 'descriptions':
-//             var node = this.xmlDoc.createElement('descriptions')
-//             var add = false
-//             for(var key in this.metadata.descriptions) {
-//               var descriptions = this.metadata.descriptions[key]
-// 	            this.metadata.langs.forEach(function (lang) {
-// 	              if (descriptions[lang]) {
-// 		              var nd = self.createNode('description', descriptions[lang])
-// 		              nd.setAttribute('xml:lang', lang)
-// 		              nd.setAttribute('descriptionType', key)
-// 		              node.appendChild(nd)
-// 		              add = true
-// 	              }
-// 	            })
-//             }
-//             if (add) {
-//               this.xmlDoc.documentElement.appendChild(node)
-//             }
-//             break
-//           case 'rights':
-//             var node = this.xmlDoc.createElement('rightsList')
-//             var add = false
-//             if (this.metadata.rights.license && this.metadata.rights.license.name) {
-//               var license = this.createNode('rights', this.metadata.rights.license.name)
-//               if (this.metadata.rights.license.identifier) {
-//                 license.setAttribute('rightsIdentifier', this.metadata.rights.license.identifier)
-//               }
-//               if (this.metadata.rights.license.uri) {
-//                 license.setAttribute('rightsURI', this.metadata.rights.license.uri)
-//               }
-//               node.appendChild(license)
-//               add = true
-//             }
-//             if (this.metadata.rights.others.length > 0) {
-//               var self = this
-//               this.metadata.rights.others.forEach(function (rg) {
-//                 self.metadata.langs.forEach(function (lg) {
-//                   if (rg.title[lg]) {
-//                     var nd = self.createNode('rights', rg.title[lg])
-//                     nd.setAttribute('xml:lang', lg)
-//                     if (rg.url[lg]) {
-//                       nd.setAttribute('rigthsURI', rg.url[lg])
-//                     }
-//                     node.appendChild(nd)
-//                     add = true
-//                   }
-//                 })
-//               })
-//             }
-//             if (add) {
-//               this.xmlDoc.documentElement.appendChild(node)
-//             }
-//           //}
-//        }
+      this.xmlDoc = parser.parseFromString('<gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"></gmd:MD_Metadata>', "text/xml");
+      var identifier = this.xmlDoc.createElement('gmd:fileIdentifier')
+      var code = this.createNode('gco:CharacterString', this.metadata.uuid)
+      identifier.appendChild(code)
       
- //     }
-     // var node = this.$el.querySelector('machin')
-     // this.xmlDoc = xmlDoc
+      this.xmlDoc.documentElement.appendChild(identifier)
+      // metadata language
+      var lang = this.xmlDoc.createElement('gmd:language')
+      lang.appendChild(this.createNodeCode('gmd:LanguageCode', 'language', this.metadata.mainLang === 'fr' ? 'fre' : 'eng', ''))
+      this.xmlDoc.documentElement.appendChild(lang)
+      // add encodage
+      var charset = this.xmlDoc.createElement('gmd:characterSet')
+      charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', ''))
+      this.xmlDoc.documentElement.appendChild(charset)
+      // hierarchyLevel
+      var hierarchy = this.xmlDoc.createElement('gmd:hierarchyLevel')
+      hierarchy.appendChild(this.createNodeCode('gmd:MD_ScopeCode','scope', 'series','series'))
+      this.xmlDoc.documentElement.appendChild(hierarchy)
+       // metadata contact
+      var contact = this.xmlDoc.createElement('gmd:contact')
+      var resp = this.createContact(this.metadata.metaContact)
+      contact.appendChild(resp)
+      this.xmlDoc.documentElement.appendChild(contact)
+      // add date stamp
+      var date = this.xmlDoc.createElement('gmd:dateStamp')
+      var now = new Date()
+      var time = this.createNode('gco:DateTime', moment.utc(now).format())
+      date.appendChild(time)
+      this.xmlDoc.documentElement.appendChild(date)
+      // standard name et varsion
+      var std = this.xmlDoc.createElement('gmd:metadataStandardName')
+      var code = this.createNode('gco:CharacterString', 'ISO 19115:3/19139')
+      std.appendChild(code)
+      this.xmlDoc.documentElement.appendChild(std)
+      
+       var std = this.xmlDoc.createElement('gmd:metadataStandardVersion')
+      var code = this.createNode('gco:CharacterString', '1.0')
+      std.appendChild(code)
+      this.xmlDoc.documentElement.appendChild(std)
+      // all metadata language
+      if (this.metadata.langs.length > 1) {
+        var langs = this.xmlDoc.createElement('gmd:locale')
+        this.metadata.langs.forEach(function (lang) {
+          var locale = self.xmlDoc.createElement('gmd:PT_Locale')
+          locale.setAttribute('id', lang.toUpperCase())
+          var lgCode = self.xmlDoc.createElement('gmd:languageCode')
+          lgCode.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', lang === 'fr' ? 'fre' : 'eng', null))
+          locale.appendChild(lgCode)
+          var charset = self.xmlDoc.createElement('gmd:characterEncoding')
+          charset.appendChild(self.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', null))
+          locale.appendChild(charset)
+          langs.appendChild(locale)
+        })
+        this.xmlDoc.documentElement.appendChild(langs)
+      }
+       // Reference system info
+      // var syst = this.xmlDoc.createContextualFragment()
+      var syst = this.xmlDoc.createElement('gmd:referenceSystemInfo')
+      var ref = this.xmlDoc.createElement('gmd:MD_ReferenceSystem')
+      syst.appendChild(ref)
+      var refIdentifier = this.xmlDoc.createElement('gmd:referenceSystemIdentifier')
+      ref.appendChild(refIdentifier)
+      identifier = this.xmlDoc.createElement('gmd:RS_Identifier')
+      refIdentifier.appendChild(identifier)
+      var code = this.createIncludeString('gmd:code', 'WGS 1984', null, this.metadata.mainLang, this.metadata.langs)
+      identifier.appendChild(code)
+      this.xmlDoc.documentElement.appendChild(syst)
+
+
     },
     createNode (name, value) {
       var full =  this.xmlDoc.createElement(name)
@@ -387,7 +165,11 @@ export default {
     },
     createNodeCode(tag, list, code, value) {
      /// var charset = this.xmlDoc.createElement('gmd:characterSet')
-      var node = this.createNode(tag, value)
+      if (value) {
+        var node = this.createNode(tag, value)
+      } else {
+        var node = this.xmlDoc.createElement(tag)
+      }
       node.setAttribute('codeList',this.codeLists[list])
       node.setAttribute('codeListValue', code)
       return node
@@ -395,106 +177,109 @@ export default {
     createContact(oContact) {
       var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
       if (oContact.nameType === 'Personal') {
-        var pers = this.xmlDoc.createElement('gmd:individualName')
+        var pers = this.createIncludeString('gmd:individualName', oContact.fullName, oContact.identifier, this.metadata.mainLang, this.metadata.langs)
+        resp.appendChild(pers)
         
       }
       var org = this.xmlDoc.createElement('gmd:organisationName')
       resp.appendChild(org)
-      if (oContact.nameType === 'Organizational' && oContact.identifier && oContact.identifier.identifier) {
-        var name = this.createNode('gmx:Anchor', oContact.fullName)
-          switch (oContact.identifier.type) {
-              case 'ORCID':
-                name.setAttribute('xlink:href', 'https://orcid.org/' + oContact.identifier.identifier)
-                break
-              case 'ISNI':
-                name.setAttribute('xlink:href', 'https://www.isni.org/' + oContact.identifier.identifier)
-                break
-              case 'ROR':
-                name.setAttribute('xlink:href', 'https://ror.org/' + oContact.identifier.identifier)
-                break
-            
-              }
-      } else {
-        var name = this.createNode('gco:CharacterString', this.metadata.metaContact.fullName)
+      if (oContact.nameType === 'Organizational' ) {
+        var organisation = {
+            name: oContact.fullName,
+            identifier: oContact.identifier
+        }
+      } else if (oContact.affiliation) {
+        var organisation = affiliation
       }
-      org.appendChild(name)
+      if (organisation) {
+        var org = this.createIncludeString('gmd:organisationName', organisation.name, organisation.identifier, this.metadata.mainLang, this.metadata.langs)
+        resp.appendChild(org)
+      }
+      var info = this.xmlDoc.createElement('gmd:contactInfo')
+      var ciContact = this.xmlDoc.createElement('gmd:CI_Contact')
+      info.appendChild(ciContact)
+      // telephone
+      var phone = this.xmlDoc.createElement('gmd:phone')
+      ciContact.appendChild(phone)
+      var ciPhone = this.xmlDoc.createElement('gmd:CI_Telephone')
+      phone.appendChild(ciPhone)
+      ciPhone.appendChild(this.createNeededString('gmd:voice', null))
+      ciPhone.appendChild(this.createNeededString('gmd:facsimile', null))
+      //address
+      var address = this.xmlDoc.createElement('gmd:address')
+      ciContact.appendChild(address)
+      var ciAddress = this.xmlDoc.createElement('gmd:CI_Address')
+      address.appendChild(ciAddress)
+      ciAddress.appendChild(this.createNeededString('gmd:deliveryPoint', null))
+      ciAddress.appendChild(this.createNeededString('gmd:city', null))
+      ciAddress.appendChild(this.createNeededString('gmd:administrativeArea', null))
+      ciAddress.appendChild(this.createNeededString('gmd:postalCode', null))
+      ciAddress.appendChild(this.createNeededString('gmd:country', null))
+      ciAddress.appendChild(this.createIncludeString('gmd:electronicMailAddress', oContact.email, null, this.metadata.mainLang, this.metadata.langs))
+      
+      resp.appendChild(info)
+      var role = this.xmlDoc.createElement('gmd:role')
+      role.appendChild(this.createNodeCode('gmd:CI_RoleCode', 'role', oContact.role, ''))
+      resp.appendChild(role)
       return resp
     },
-    generateContact (type, tab) {
-      if (tab.length > 0 && (type === 'creator' || type === 'contributor')) {
-        var root = this.xmlDoc.createElement(type+'s')
-        this.xmlDoc.documentElement.appendChild(root)
-        var self = this
-        var add = false
-        tab.forEach(function (creator) {
-          var contact = self.xmlDoc.createElement(type)
-          if (creator.type) {
-            contact.setAttribute('contributorType', creator.type)
-          }
-          if (!creator.fullName) {
-            return
-          }
-          var full = self.xmlDoc.createElement(type + 'Name')
-          full.appendChild(self.xmlDoc.createTextNode(creator.fullName))
-          contact.appendChild(full)
-          root.appendChild(contact)
-          
-          if (type !== 'publisher' ) {
-            full.setAttribute('nameType', creator.nameType)
-          }
-         
-          
-          if (creator.givenName) {
-            contact.appendChild(self.createNode('givenName', creator.givenName))
-          }
-          if (creator.familyName) {
-            contact.appendChild(self.createNode('familyName', creator.familyName))
-          }
-          if (creator.identifier && creator.identifier.identifier) {
-              var node = self.createNode('nameIdentifier', creator.identifier.identifier)
-              node.setAttribute('nameIdentifierScheme', creator.identifier.type)
-              switch (creator.identifier.type) {
-              case 'ORCID':
-                node.setAttribute('schemeURI', 'https://orcid.org/')
-                break
-              case 'ISNI':
-                node.setAttribute('shemeURI', 'https://www.isni.org/')
-                break
-              case 'ROR':
-                node.setAttribute('shemeURI', 'https://ror.org/')
-                break
-              case 'GRID':
-                node.setAttribute('shemeURI', 'https://www.grid.ac/')
-                break
-              }
-              contact.appendChild(node)
-          }
-          creator.affiliations.forEach(function (affiliation) {
-            if (!affiliation.name) {
-              return
-            }
-            var node = self.createNode('affiliation', affiliation.name)
-            if (affiliation.identifier && affiliation.identifier.identifier) {
-              node.setAttribute('affiliationIdentifierScheme', affiliation.identifier.type)
-              switch (affiliation.identifier.type) {
-              case 'ORCID':
-                node.setAttribute('affiliationIdentifier', 'https://orcid.org/' + affiliation.identifier.identifier)
-                break
-              case 'ISNI':
-                node.setAttribute('affiliationIdentifier', 'https://www.isni.org/' + affiliation.identifier.identifier)
-                break
-              case 'ROR':
-                node.setAttribute('affiliationIdentifier', 'https://ror.org/' + affiliation.identifier.identifier)
-                break
-              case 'GRID':
-                node.setAttribute('affiliationIdentifier', affiliation.identifier.identifier)
-                break
-              }
-            }
-            contact.appendChild(node)
-          })
-        })
+    createNeededString (tag, string) {
+      var node = this.xmlDoc.createElement(tag)
+      if (!string) {
+        node.setAttribute('gco:nilReason', 'missing')
+        node.appendChild(this.xmlDoc.createElement('gco:CharacterString'))
+      } else {
+        node.appendChild(this.createNode('gco:CharacterString', string))
       }
+      return node
+    },
+    createIncludeString (tag, string, link, main, langs) {
+      var node = this.xmlDoc.createElement(tag)
+      var values = {}
+      if (typeof string === 'string' ) {
+        values = {fr: string, en: string}
+      } else {
+        values = string
+      }
+      if (link) {
+        var text = this.createNode('gmx:Anchor', values[main])
+        if (typeof link === 'string') {
+          text.setAttribute('xlink:href', link)
+        } else if (link.identifier){
+          switch (link.type) {
+          case 'ORCID':
+            text.setAttribute('xlink:href', 'https://orcid.org/' + link.identifier)
+            break
+          case 'ISNI':
+            text.setAttribute('xlink:href', 'https://www.isni.org/' + link.identifier)
+            break
+          case 'ROR':
+            text.setAttribute('xlink:href', 'https://ror.org/' + link.identifier)
+            break
+        
+          }
+        } else {
+          var text = this.createNode('gco:CharacterString', values[main])
+        }
+      } else {
+        var text = this.createNode('gco:CharacterString', values[main])
+      }
+      node.appendChild(text)
+      if (langs.length > 1) {
+        node.setAttribute('xsi:type', 'gmd:PT_FreeText_PropertyType')
+        var translate = this.xmlDoc.createElement('gmd:PT_FreeText')
+        var self = this
+        langs.forEach(function (lang) {
+          var trans = self.xmlDoc.createElement('gmd:textGroup')
+          var locale = self.createNode('gmd:LocalisedCharacterString', values[lang])
+          locale.setAttribute('locale', '#' + lang.toUpperCase())
+          trans.appendChild(locale)
+          translate.appendChild(trans)
+          
+        })
+        node.appendChild(translate)
+      }
+      return node
     },
     generateSubject (subject) {
       var nodes = []
