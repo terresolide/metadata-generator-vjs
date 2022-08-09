@@ -37,7 +37,7 @@
 	       <span class="label" style="min-width:130px;">Principale</span>
 	       <span v-for="lang in ['fr', 'en']" style="margin-right:20px;">
 	         <span >{{lang}}</span>
-	         <input  v-model="meta.mainLang" :value="lang" type="radio" @change="mainLangChange"/>
+	         <input v-model="meta.mainLang" type="radio":value="lang" @input="mainLangChange"/>
 	       </span>
        </div>
        <div>
@@ -471,6 +471,7 @@ export default {
   methods: {
     defaultMeta () {
       return {
+        uuid: this.createUuid(),
         langs: ['fr', 'en'],
         doi: null,
         creators:[],
@@ -490,7 +491,7 @@ export default {
         identifiers: [],
         links: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
-        metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', nameType: 'Organizational'},
+        metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', nameType: 'Organizational'},
         contributors: [],
         dates: [],
         status: 'onGoing',
@@ -509,6 +510,15 @@ export default {
 	      this.meta = this.defaultMeta()
 	      this.addCreator()
 	      this.change()
+    },
+    createUuid(){
+      var dt = new Date().getTime();
+      var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = (dt + Math.random()*16)%16 | 0;
+          dt = Math.floor(dt/16);
+          return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+      });
+      return uuid;
     },
     drawBbox (bbox) {
       this.bboxId = bbox.id
@@ -673,6 +683,8 @@ export default {
       }
     },
     mainLangChange () {
+//       console.log(e)
+//       this.meta.mainLang = e.target.value === 'fr' ? 'en' : 'fr'
       var index = this.meta.langs.indexOf(this.meta.mainLang)
       console.log(index)
       if (index === 1) {
@@ -681,7 +693,8 @@ export default {
       } else if (index < 0) {
         this.meta.langs.unshift(this.meta.mainLang)
       }
-      
+      console.log(this.meta.mainLang)
+      console.log(this.meta.langs)
     },
 //     readJSON (evt) {
 //       let files = evt.target.files; // FileList object

@@ -43,7 +43,19 @@ export default {
   },
   data () {
     return {
-      xmlDoc: null
+      xmlDoc: null,
+      codeLists: {
+        language: 'http://www.loc.gov/standards/iso639-2/',
+        charset: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode',
+        scope: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode',
+        role: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode',
+        dateType: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode',
+        progress: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode',
+        maintenance: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode',
+        keywordType: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode',
+        spatialRepresentation: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode',
+        link: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_OnLineFunctionCode'
+      }
     }
   },
   watch: {
@@ -79,30 +91,22 @@ export default {
       const parser = new DOMParser();
         this.xmlDoc = parser.parseFromString('<gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"></gmd:MD_Metadata>', "text/xml");
         var identifier = this.xmlDoc.createElement('gmd:fileIdentifier')
-        var code = this.createNode('gco:CharacterString', '----METADATA-IDENTIFIER--------')
+        var code = this.createNode('gco:CharacterString', this.metadata.uuid)
         identifier.appendChild(code)
         
         this.xmlDoc.documentElement.appendChild(identifier)
         // metadata language
         var lang = this.xmlDoc.createElement('gmd:language')
-        var code = this.createNode('gmd:LanguageCode', '')
-        code.setAttribute('codeList', 'http://www.loc.gov/standards/iso639-2/')
-        code.setAttribute('codeListValue', this.metadata.mainLang === 'fr' ? 'fre' : 'eng')
-        lang.appendChild(code)
+        lang.appendChild(this.createNodeCode('gmd:LanguageCode', 'language', this.metadata.mainLang === 'fr' ? 'fre' : 'eng', ''))
         this.xmlDoc.documentElement.appendChild(lang)
         // add encodage
         var charset = this.xmlDoc.createElement('gmd:characterSet')
-        var code = this.createNode('gmd:MD_CharacterSetCode', '')
-        code.setAttribute('codeList', 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode')
-        code.setAttribute('codeListValue', 'utf8')
+        charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', ''))
         this.xmlDoc.documentElement.appendChild(charset)
         // hierarchyLevel
-         var lang = this.xmlDoc.createElement('gmd:hierarchyLevel')
-        var code = this.createNode('gmd:MD_ScopeCode', 'series')
-        code.setAttribute('codeList', 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode')
-        code.setAttribute('codeListValue', 'series')
-        lang.appendChild(code)
-        this.xmlDoc.documentElement.appendChild(lang)
+        var hierarchy = this.xmlDoc.createElement('gmd:hierarchyLevel')
+        hierarchy.appendChild(this.createNodeCode('gmd:MD_ScopeCode','scope', 'series','series'))
+        this.xmlDoc.documentElement.appendChild(hierarchy)
          // metadata contact
         var contact = this.xmlDoc.createElement('gmd:contact')
         var resp = this.createContact(this.metadata.metaContact)
@@ -129,8 +133,10 @@ export default {
             var locale = self.xmlDoc.createElement('gmd:PT_Locale')
             locale.setAttribute('id', lang.toUpperCase())
             var lgCode = self.xmlDoc.createElement('gmd:languageCode')
+            lgCode.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', lang === 'fr' ? 'fre' : 'eng', ''))
             locale.appendChild(lgCode)
             var charset = self.xmlDoc.createElement('gmd:characterEncoding')
+            charset.appendChild(self.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8', ''))
             locale.appendChild(charset)
             langs.appendChild(locale)
           })
@@ -378,6 +384,13 @@ export default {
       var full =  this.xmlDoc.createElement(name)
       full.appendChild(this.xmlDoc.createTextNode(value))
       return full
+    },
+    createNodeCode(tag, list, code, value) {
+     /// var charset = this.xmlDoc.createElement('gmd:characterSet')
+      var node = this.createNode(tag, value)
+      node.setAttribute('codeList',this.codeLists[list])
+      node.setAttribute('codeListValue', code)
+      return node
     },
     createContact(oContact) {
       var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
