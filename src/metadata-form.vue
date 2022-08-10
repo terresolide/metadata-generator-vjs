@@ -189,23 +189,24 @@
    </div>
     <div class="block-prop iso">
       <meta-mro value="M"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Status
+     <label @click="deploy($event)"><i class="fa"></i> Status de la collection
     
      </label>
      <div class="properties">
       <select v-model="meta.status">
-       <option v-for="st in status" :value="st">{{st}}</option>
+       <option v-for="st, id in status" :value="id">{{st}}</option>
       </select>
-       <formater-tooltip :width="350" description="Propriété ISO19139:
-       <ul>
-         <li><b>completed</b>: production de la ressource finalisée</li>
-         <li><b>historicalArchive</b>: ressource archivée et hors ligne</li>
-         <li><b>obsolete</b>: ressource obsolète</li>
-         <li><b>onGoing</b>: ressource continuellement mise à jour</li>
-         <li><b>planned</b>: ressource créée ou mise à jour sur base d'une date fixée</li>
-         <li><b>required</b>: ressource qui doit être générée ou mise à jour</li>
-         <li><b>underDevelopment</b>: en cours de création</li>
-       </ul>"></formater-tooltip>
+     </div>
+   </div>
+     <div class="block-prop iso">
+      <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Fréquence de maintenance des données
+    
+     </label>
+     <div class="properties">
+      <select v-model="meta.maintenance">
+       <option v-for="st, id in maintenance" :value="id">{{st}}</option>
+      </select>
      </div>
    </div>
    <div class="block-prop">
@@ -244,22 +245,41 @@
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Type de représentation spatiale
        <formater-tooltip description="Propriété ISO10139, pas toujours adaptée aux données mais obligatoire. Dans le cas des relevés
-        d'une station, choisissez <em>vector</em>:
-        <ul><li><b>vector</b>: Donnée vecteur (point, ligne, polygone)</li>
-        <li><b>grid</b>: Donnée raster ou matricielle</li>
-        <li><b>textTable</b>: Fichier texte ou table</li>
-        <li><b>tin</b>: Réseau de triangles réguliers</li>
-        <li><b>stereoModel</b>: Vue tri-dimensionnelle formée par une paire d'images stéréoscopiques</li>
-        <li><b>video</b>: enregistrement vidéo</li>
-        </ul>"></formater-tooltip>
+        d'une station, choisissez <em>vector</em>"></formater-tooltip>
      </label>
      <div class="properties">
       <select v-model="meta.representationType">
-       <option v-for="rp in representationType" :value="rp">{{rp}}</option>
+       <option v-for="rp, id in representationType" :value="id">{{rp}}</option>
       </select>
      </div>
    </div>
-  
+   <div class="block-prop iso">
+     <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Référentiel de coordonnées
+       <formater-tooltip description="Il s'agit du référentiel utilisé pour les produits/données.
+       <br>Si non pertinent: laissez le WGS 84 (2D) utilisé pour les métadonnées.<br>
+       Une liste de référentiels est proposée, si le référentiel utilisé ne s'y trouve pas, vous devez saisir au moins son nom."></formater-tooltip>
+     </label>
+     <div class="properties">
+     <div>
+          <span class="label" style="min-width:80px;" title="Rechercher"><i class="fa fa-search"></i>  </span>
+             <select v-model="referentielCode" @change="referentielChange">
+           <option value="">-- Autre --</option>
+           <option v-for="epsg in epsgList" :value="epsg.id">{{epsg.id + ' - ' + epsg.name +  (epsg.comment ? ' - ' + epsg.comment : '')}}</option>
+         </select>
+         <formater-tooltip description="Ce champs n'est utilisé que pour la recherche"></formater-tooltip>
+     </div>
+      <div>
+        <span class="label" style="min-width:80px;">Nom</span>
+         <input v-model="meta.referentiel.name" type="text"  required/>
+       
+      </div>
+      <div>
+         <span class="label" style="min-width:80px;">Url</span>
+         <input v-model="meta.referentiel.link" class="medium" type="url" />
+      </div>
+     </div>
+   </div>
    <div class="block-prop">
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)">
@@ -448,8 +468,50 @@ export default {
         other: null
       },
       meta: null,
-      status: ['completed', 'historicalArchive', 'obsolete', 'onGoing', 'planned', 'required', 'underDevelopment'],
-      representationType:['vector', 'grid', 'textTable', 'tin', 'stereoModel', 'video' ]
+      status: {
+        completed: 'Production de la ressource finalisée',
+        historicalArchive: 'Ressource archivée et hors ligne',
+        obsolete: 'Ressource obsolète',
+        onGoing: 'Ressource continuellement mise à jour',
+        planned: 'Ressource créée ou mise à jour sur base d\'une date fixée',
+        required: 'Ressource qui doit être générée ou mise à jour',
+        underDevelopment: 'En cours de création'
+      },
+      representationType:{
+        vector: 'Donnée vecteur (point, ligne, polygone)', 
+        grid: 'Donnée raster ou matricielle',
+        textTable: 'Fichier texte ou table',
+        tin: 'Réseau de triangle irrégulier (Triangulated Irregular Network)', 
+        stereoModel: 'Modèle stéréoscopique', 
+        video: 'Enregistrement vidéo',
+      },
+      maintenance: {
+        continual: 'mise à jour en continue',
+        daily: 'journalière',
+        weekly: 'hebdomadaire',
+        fortnightly: 'bi-mensuelle',
+        monthly: 'mensuelle',
+        quaterly: 'trimestrielle',
+        biannualy: 'bi-annuelle',
+        asNeeded: 'lorsque nécessaire',
+        irregular: 'irrégulière',
+        notPlanned: 'non-planifiée',
+        unknown: 'inconnue'
+      },
+      referentielCode: null,
+      epsgList:  [
+        { id: "2154", name: "RGF93 v1 / Lambert-93", comment: "France"},
+        { id: "27571", name: "NTF (Paris) / Lambert zone I", comment: "Nord France"} ,
+        { id: "27572", name: "NTF (Paris) / Lambert zone II", comment: "Centre France"},
+        { id: "27573", name: "NTF (Paris) / Lambert zone III", comment: "Sud France"},
+        { id: "3035", name: "ETRS89-extended / LAEA Europe", comment:null},
+        { id: "4171", name: "RGF93 v1", comment:"Geodetic"},
+        { id: "9777", name: "RGF93 v2", comment:"Geodetic"},
+        { id: "9069", name: "ETRF2014", comment: "Geodetic"},
+        { id: "4326", name: "WGS 84", comment: "2D"},
+        { id: "4979", name: "WGS 84", comment: "3D"},
+        { id: "7789", name: "ITRF2014", comment: null}
+      ]
     }
   },
   watch: {
@@ -476,7 +538,7 @@ export default {
         doi: null,
         creators:[],
         title: {fr: null, en: null},
-        publisher: {fullName: '', email: '', nameType: 'Organizational'},
+        publisher: {fullName: '', email: '', nameType: 'Organizational', 'role': 'publisher'},
         publicationDate: null,
         publicationYear: null,
         formats: [],
@@ -498,6 +560,8 @@ export default {
         geoLocation: [{name: null, west:null, east:null, north:null, south:null}],
         temporalExtent: {start: null, end: null},
         representationType: 'grid',
+        maintenance: 'asNeeded',
+        referentiel: {name: 'WGS 84', link: 'http://www.opengis.net/def/crs/EPSG/0/4326'},
         condition: {
           access: 'unknown',
           use: 'unknown'
@@ -695,6 +759,18 @@ export default {
       }
       console.log(this.meta.mainLang)
       console.log(this.meta.langs)
+    },
+    referentielChange () {
+      console.log(this.referentielCode)
+      if (this.referentielCode) {
+        var find = this.epsgList.find(epsg => epsg.id === this.referentielCode)
+        if (find) {
+          this.meta.referentiel = {
+              name: find.name,
+              link: 'http://www.opengis.net/def/crs/EPSG/0/' + this.referentielCode
+          }
+        }
+      }
     },
 //     readJSON (evt) {
 //       let files = evt.target.files; // FileList object

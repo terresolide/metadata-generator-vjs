@@ -152,16 +152,146 @@ export default {
       ref.appendChild(refIdentifier)
       identifier = this.xmlDoc.createElement('gmd:RS_Identifier')
       refIdentifier.appendChild(identifier)
-      var code = this.createIncludeString('gmd:code', 'WGS 1984', null, this.metadata.mainLang, this.metadata.langs)
+      var code = this.createIncludeString('gmd:code', this.metadata.referentiel.name, this.metadata.referentiel.link, this.metadata.mainLang, this.metadata.langs)
       identifier.appendChild(code)
       this.xmlDoc.documentElement.appendChild(syst)
 
+      this.xmlDoc.documentElement.appendChild(this.createDataIdentification())
 
     },
     createNode (name, value) {
       var full =  this.xmlDoc.createElement(name)
       full.appendChild(this.xmlDoc.createTextNode(value))
       return full
+    },
+    createDataIdentification () {
+      var self = this
+      var node = this.xmlDoc.createElement('gmd:identificationInfo')
+      var data = this.xmlDoc.createElement('gmd:MD_DataIdentification')
+      node.appendChild(data)
+      var citation = this.xmlDoc.createElement('gmd:citation')
+      data.appendChild(citation)
+      var ciCitation = this.xmlDoc.createElement('gmd:CI_Citation')
+      citation.appendChild(ciCitation)
+      // title
+      if (this.metadata.title[this.metadata.mainLang]) {
+        ciCitation.appendChild(this.createIncludeString('gmd:title', this.metadata.title, null, this.metadata.mainLang, this.metadata.langs))
+      }
+      // dates
+      // creation
+      var dateCreations = this.metadata.dates.filter(dt => dt.type === 'Created')
+      dateCreations.sort(function (a, b) {
+        if (a.date > b.date) {
+          return -1
+        } else {
+          return 1
+        }
+      })
+      if (dateCreations[0] && dateCreations[0].date) {
+        ciCitation.appendChild(this.createDate(dateCreations[0].date, 'creation'))
+      }
+      // publication
+      if (this.metadata.publicationDate) {
+        ciCitation.appendChild(this.createDate(this.metadata.publicationDate, 'publication'))
+      }
+      // revision
+      var dateRevisions = this.metadata.dates.filter(dt => dt.type === 'Updated')
+      dateRevisions.sort(function (a, b) {
+        if (a.date > b.date) {
+          return -1
+        } else {
+          return 1
+        }
+      })
+      if (dateRevisions[0] && dateRevisions[0].date) {
+        ciCitation.appendChild(this.createDate(dateRevisions[0].date, 'revision'))
+      }
+      // IDENTIFIER
+      if (this.metadata.doi) {
+        ciCitation.appendChild(this.createIdentifier('https://www.doi.org/' + this.metadata.doi))
+      }
+      this.metadata.identifiers.forEach(function (identifier) {
+        ciCitation.appendChild(self.createIdentifier(identifier.identifier))
+      })
+      // abstract
+      if (this.metadata.descriptions.Abstract[this.metadata.mainLang]) {
+        data.appendChild(this.createIncludeString('gmd:abstract', this.metadata.descriptions.Abstract, null, this.metadata.mainLang, this.metadata.langs))
+      }
+      // status
+      var status = this.xmlDoc.createElement('gmd:status')
+      status.appendChild(this.createNodeCode('gmd:MD_ProgressCode', 'progress', this.metadata.status))
+      data.appendChild(status)
+      
+      // contact
+      if (this.metadata.publisher.fullName) {
+        var contact = this.xmlDoc.createElement('gmd:pointOfContact')
+        contact.appendChild( this.createContact(this.metadata.publisher))
+        data.appendChild(contact)
+      }
+      this.metadata.creators.forEach(function (creator) {
+        if (creator.fullName) {
+          var contact = self.xmlDoc.createElement('gmd:pointOfContact')
+          contact.appendChild(self.createContact(creator))
+          data.appendChild(contact)
+        }
+      })
+       this.metadata.contributors.forEach(function (contributor) {
+        if (contributor.fullName) {
+          var contact = self.xmlDoc.createElement('gmd:pointOfContact')
+          contact.appendChild(self.createContact(contributor))
+          data.appendChild(contact)
+        }
+      })
+      // Resource Maintenance
+      var rMain = this.xmlDoc.createElement('gmd:resourceMaintenance')
+      var mainInfo = this.xmlDoc.createElement('gmd:MD_MaintenanceInformation')
+      rMain.appendChild(mainInfo)
+      var freq = this.xmlDoc.createElement('gmd:maintenanceAndUpdateFrequency')
+      mainInfo.appendChild(freq)
+      freq.appendChild(this.createNodeCode('gmd:MD_MaintenanceFrequencyCode', 'maintenance', this.metadata.maintenance))
+      data.appendChild(rMain)
+      
+      // graphic overview
+      
+      // keywords
+      
+      // spatial representation type
+      var sp = this.xmlDoc.createElement('gmd:spatialRepresentationType')
+      sp.appendChild(this.createNodeCode('gmd:MD_SpatialRepresentationTypeCode', 'spatialRepresentation', this.metadata.representationType))
+      data.appendChild(sp)
+      // spatial resolution
+      this.metadata.resolutions.forEach(function (resolution) {
+        if (resolution.value) {
+          var sp = self.xmlDoc.createElement('gmd:spatialResolution')
+          var md = self.xmlDoc.createElement('gmd:MD_Resolution')
+          sp.appendChild(md)
+          var dist = self.xmlDoc.createElement('gmd:distance')
+          md.appendChild(dist)
+          var gco = self.createNode('gco:Distance', resolution.value)
+          gco.setAttribute('uom', resolution.unit)
+          dist.appendChild(gco)
+          data.appendChild(sp)
+        }
+      })
+      // language
+      var lang = this.xmlDoc.createElement('gmd:language')
+     // var gco = this.createNode('gco:CharacterString', this.metadata.lang === 'fr' ? 'fre' : 'eng')
+      lang.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', this.metadata.lang === 'fr' ? 'fre' : 'eng', null))
+      // lang.appendChild(gco)
+      data.appendChild(lang)
+      
+      // character set
+      var charset = this.xmlDoc.createElement('gmd:characterSet')
+      charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8'))
+      data.appendChild(charset)
+      
+      // topic category
+      var topic = this.xmlDoc.createElement('gmd:topicCategory')
+      topic.appendChild(this.createNode('gmd:MD_TopicCategoryCode', 'geoscientificInformation'))
+      data.appendChild(topic)
+      
+      // extent
+      return node
     },
     createNodeCode(tag, list, code, value) {
      /// var charset = this.xmlDoc.createElement('gmd:characterSet')
@@ -174,6 +304,25 @@ export default {
       node.setAttribute('codeListValue', code)
       return node
     },
+    createIdentifier (id) {
+      var node = this.xmlDoc.createElement('gmd:identifier')
+      var identifier = this.xmlDoc.createElement('gmd:MD_Identifier')
+      node.appendChild(identifier)
+      identifier.appendChild(this.createIncludeString('gmd:code', id, null, 'en', ['en']))
+      return node
+    },
+    createDate (date, type) {
+      var node = this.xmlDoc.createElement('gmd:date')
+      var ciDate = this.xmlDoc.createElement('gmd:CI_Date')
+      node.appendChild(ciDate)
+      var nd = this.xmlDoc.createElement('gmd:date')
+      ciDate.appendChild(nd)
+      nd.appendChild(this.createNode('gco:Date', date))
+      var nd = this.xmlDoc.createElement('gmd:dateType')
+      ciDate.appendChild(nd)
+      nd.appendChild(this.createNodeCode('gmd:CI_DateTypeCode', 'dateType', type))
+      return node
+    },
     createContact(oContact) {
       var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
       if (oContact.nameType === 'Personal') {
@@ -181,43 +330,46 @@ export default {
         resp.appendChild(pers)
         
       }
-      var org = this.xmlDoc.createElement('gmd:organisationName')
-      resp.appendChild(org)
+//       var org = this.xmlDoc.createElement('gmd:organisationName')
+//       resp.appendChild(org)
       if (oContact.nameType === 'Organizational' ) {
         var organisation = {
             name: oContact.fullName,
             identifier: oContact.identifier
         }
-      } else if (oContact.affiliation) {
-        var organisation = affiliation
+      } else if (oContact.affiliations.length > 0) {
+        var organisation = oContact.affiliations[0]
       }
       if (organisation) {
         var org = this.createIncludeString('gmd:organisationName', organisation.name, organisation.identifier, this.metadata.mainLang, this.metadata.langs)
         resp.appendChild(org)
       }
-      var info = this.xmlDoc.createElement('gmd:contactInfo')
-      var ciContact = this.xmlDoc.createElement('gmd:CI_Contact')
-      info.appendChild(ciContact)
-      // telephone
-      var phone = this.xmlDoc.createElement('gmd:phone')
-      ciContact.appendChild(phone)
-      var ciPhone = this.xmlDoc.createElement('gmd:CI_Telephone')
-      phone.appendChild(ciPhone)
-      ciPhone.appendChild(this.createNeededString('gmd:voice', null))
-      ciPhone.appendChild(this.createNeededString('gmd:facsimile', null))
-      //address
-      var address = this.xmlDoc.createElement('gmd:address')
-      ciContact.appendChild(address)
-      var ciAddress = this.xmlDoc.createElement('gmd:CI_Address')
-      address.appendChild(ciAddress)
-      ciAddress.appendChild(this.createNeededString('gmd:deliveryPoint', null))
-      ciAddress.appendChild(this.createNeededString('gmd:city', null))
-      ciAddress.appendChild(this.createNeededString('gmd:administrativeArea', null))
-      ciAddress.appendChild(this.createNeededString('gmd:postalCode', null))
-      ciAddress.appendChild(this.createNeededString('gmd:country', null))
-      ciAddress.appendChild(this.createIncludeString('gmd:electronicMailAddress', oContact.email, null, this.metadata.mainLang, this.metadata.langs))
-      
-      resp.appendChild(info)
+      if (oContact.email) {
+	      var info = this.xmlDoc.createElement('gmd:contactInfo')
+	      var ciContact = this.xmlDoc.createElement('gmd:CI_Contact')
+	      info.appendChild(ciContact)
+	      // telephone
+	//       var phone = this.xmlDoc.createElement('gmd:phone')
+	//       ciContact.appendChild(phone)
+	//       var ciPhone = this.xmlDoc.createElement('gmd:CI_Telephone')
+	//       phone.appendChild(ciPhone)
+	//       ciPhone.appendChild(this.createNeededString('gmd:voice', null))
+	//       ciPhone.appendChild(this.createNeededString('gmd:facsimile', null))
+	      //address
+	      var address = this.xmlDoc.createElement('gmd:address')
+	      ciContact.appendChild(address)
+	      
+	      var ciAddress = this.xmlDoc.createElement('gmd:CI_Address')
+	      address.appendChild(ciAddress)
+	//       ciAddress.appendChild(this.createNeededString('gmd:deliveryPoint', null))
+	//       ciAddress.appendChild(this.createNeededString('gmd:city', null))
+	//       ciAddress.appendChild(this.createNeededString('gmd:administrativeArea', null))
+	//       ciAddress.appendChild(this.createNeededString('gmd:postalCode', null))
+	//       ciAddress.appendChild(this.createNeededString('gmd:country', null))
+	      ciAddress.appendChild(this.createIncludeString('gmd:electronicMailAddress', oContact.email, null, this.metadata.mainLang, this.metadata.langs))
+     
+        resp.appendChild(info)
+      }
       var role = this.xmlDoc.createElement('gmd:role')
       role.appendChild(this.createNodeCode('gmd:CI_RoleCode', 'role', oContact.role, ''))
       resp.appendChild(role)
@@ -240,7 +392,13 @@ export default {
         values = {fr: string, en: string}
       } else {
         values = string
+        for(var lang in string) {
+          if (values[lang] === null) {
+            values[lang] = ''
+          }
+        }
       }
+      
       if (link) {
         var text = this.createNode('gmx:Anchor', values[main])
         if (typeof link === 'string') {

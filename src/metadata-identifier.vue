@@ -11,7 +11,7 @@
      (<a :href="url[meta.type]" target="_blank">{{url[meta.type]}}</a>)
      </em>
    </span>
-   <span v-else>
+   <span v-else class="datacite">
 	   <input v-model="meta.type" list="types" type="text" required placeholder="local identification, URN, URL ou ..."
 	   class="medium" />
 	   <datalist id="types">

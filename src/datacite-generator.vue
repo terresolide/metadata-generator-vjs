@@ -77,8 +77,8 @@ export default {
       // var xmlDoc = new Document()null;
       const parser = new DOMParser();
         this.xmlDoc = parser.parseFromString('<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"></resource>', "text/xml");
-        var titles = this.xmlDoc.createElement('titles')
-        this.xmlDoc.documentElement.appendChild(titles)
+//         var titles = this.xmlDoc.createElement('titles')
+//         this.xmlDoc.documentElement.appendChild(titles)
         // return xmlDoc.documentElement
       var self = this
       for (var key in this.metadata) {

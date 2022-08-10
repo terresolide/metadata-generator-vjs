@@ -135,7 +135,6 @@ export default {
     }
   },
   created () {
-    console.log(this.depth)
     this.show = this.deployed || this.depth !== 1
   },
   data() {
