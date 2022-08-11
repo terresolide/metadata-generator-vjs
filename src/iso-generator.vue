@@ -84,6 +84,55 @@ export default {
         linkElement.click();
         linkElement.remove()
     },
+    addConstraintsTo (node) {
+      var constraints = this.xmlDoc.createElement('gmd:resourceConstraints')
+      // this.metadata.condition
+      var access = this.metadata.rights.filter(rg => rg.type === 'access')
+      if (this.metadata.condition.access || access.length === 0) {
+        
+      } else {
+        
+      }
+      var access = this.metadata.rights.filter(rg => rg.type === 'access')
+      
+      // this.metadata.rights
+    },
+    addExtentTo (node) {
+      var extent = this.xmlDoc.createElement('gmd:extent')
+      var exExtent = this.xmlDoc.createElement('gmd:EX_Extent')
+      extent.appendChild(exExtent)
+      var self = this
+      this.metadata.geoLocation.forEach(function (geoLocation) {
+        
+        if (geoLocation.south && geoLocation.north && geoLocation.east && geoLocation.west) {
+          console.log(geoLocation)
+          exExtent.appendChild(self.createGeolocation(geoLocation))
+        }
+      })
+      node.appendChild(extent)
+    },
+    createGeolocation (obj) {
+      console.log(obj)
+      var self = this
+      var node = this.xmlDoc.createElement('gmd:geographicElement')
+      var exNode = this.xmlDoc.createElement('gmd:EX_GeographicBoundingBox');
+      node.appendChild(exNode)
+      var tab =  ['west', 'east']
+      for(var i in tab) {
+        var card = tab[i]
+         exNode.appendChild(self.createCard(obj[card], 'gmd:' + card + 'BoundLongitude'))
+      }
+       ['south', 'north'].forEach(function (card) {
+         exNode.appendChild(self.createCard(obj[card], 'gmd:' + card + 'BoundLatitude'))
+      })
+      return node
+    },
+    createCard (value, elt) {
+      console.log(value)
+      var node = this.xmlDoc.createElement(elt)
+      node.appendChild(this.createNode('gco:Decimal', value))
+      return node
+    },
     addKeywordsTo (node) {
       // re order keywords by thesaurus and group
       var thesaurus = {
@@ -374,6 +423,7 @@ export default {
       data.appendChild(topic)
       
       // extent
+      this.addExtentTo(data)
       return node
     },
     createNodeCode(tag, list, code, value) {
