@@ -66,8 +66,11 @@
     </div>
     <div>
       <label>Affiliation(s)
-      <formater-tooltip v-if="meta.nameType === 'Organizational'" description="Dans le cas d'une organisation, comme une équipe de recherche
-      l'affiliation est l'institution à laquelle le groupe est rattaché"></formater-tooltip>
+      <formater-tooltip v-if="meta.nameType === 'Organizational'" :width="400" description="<b>Datacite</b>: Dans le cas d'une organisation, comme une équipe de recherche
+      l'affiliation est l'institution à laquelle le groupe est rattaché.<br>
+      <b>ISO19139</b>: non pris en compte"></formater-tooltip>
+       <formater-tooltip v-if="meta.nameType === 'Personal'" :width="350" description="<b>Datacite</b>: autant d'affiliation que souhaitez.<br>
+      <b>ISO19139</b>: uniquement la première affiliation est exigée et considérée."></formater-tooltip>
       </label>
       <span v-if="meta.nameType === 'Personal'">
        <meta-mro value="M"></meta-mro>
@@ -75,7 +78,7 @@
       <span v-else class="datacite">
         <meta-mro value="O"></meta-mro>
       </span>
-      <span v-for="affiliation, id in meta.affiliations">
+      <span v-for="affiliation, id in meta.affiliations" :class="{datacite: meta.nameType === 'Organizational' || id > 0}">
         <metadata-affiliation :affiliation=affiliation :id="id" 
         :erasable="meta.affiliations.length > 1 || meta.nameType === 'Organizational'"
         @change="changeAffiliation" @remove="removeAffiliation"></metadata-affiliation>
@@ -137,7 +140,7 @@
    data () {
      return {
        roles: ['resourceProvider','custodian','owner','user',
-         'originator','pointOfContact',
+         'originator','pointOfContact', 'distributor',
          'principalInvestigator','processor',
          'publisher','author'],
        contributorTypes: ['ContactPerson','DataCollector','DataCurator',

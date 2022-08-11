@@ -22,20 +22,25 @@
 	   </div>
 	   <div style="display:inline-block;width:50%;padding: 0 5px;">
 		   <metadata-examples ref="example" @change="changeMetadata"></metadata-examples>
-		   <h3 style="margin:0;vertical-align:baseline;">
-			    Remettre les valeurs à zéro 
-			    <input type="button" value="Initialiser" @click="initDefaultMeta" /> 
-			 </h3>
+		   
 		 </div>
 	   <div  style="display:inline-block;width:48%;vertical-align:top;">
-	     <h3 style="margin:0;vertical-align:baseline;">Changer de format 
-			    <span v-if="generator === 'datacite'">
-			       <input type="button" value="ISO 19139" @click="changeGenerator" />
-			    </span> 
-			    <span v-else>
-			        <input type="button" value="Datacite 4.4" @click="changeGenerator" />
-			    </span>
-	     </h3>
+	     <div style="margin-bottom:20px;">
+	       <h3 style="margin:0;vertical-align:baseline;">
+          Remettre les valeurs à zéro 
+          <input type="button" value="Initialiser" @click="initDefaultMeta" /> 
+         </h3>
+	     </div>
+	     <div>
+		     <h3 style="margin:0;vertical-align:baseline;">Basculer vers le format 
+				    <span v-if="generator === 'datacite'">
+				       <input type="button" value="ISO 19139" @click="changeGenerator" />
+				    </span> 
+				    <span v-else>
+				        <input type="button" value="Datacite 4.4" @click="changeGenerator" />
+				    </span>
+		     </h3>
+	     </div>
 	   </div>
    </div>
    <div  style="float:left;width:calc(50% - 5px);margin-top:10px;">

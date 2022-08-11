@@ -135,7 +135,7 @@ export default {
     }
   },
   created () {
-    this.show = this.deployed || this.depth !== 1
+    this.show = this.deployed || (!this.deployed && this.depth !== 1)
   },
   data() {
     return {

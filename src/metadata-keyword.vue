@@ -102,7 +102,7 @@ export default {
             schemeUrl: 'https://service.poleterresolide.fr/voc/science_field',
             valueRoot: 'https://service.poleterresolide.fr/voc/science_field/',
             searchUrl: 'https://service.poleterresolide.fr/voc/science_field',
-            gn: '.formater-discipline-gn',
+            gn: 'formater-discipline-gn',
             type: 'discipline',
             date: '2021-06-23 07:02:17',
             langs: ['fr', 'en']
@@ -184,7 +184,7 @@ export default {
       this.change()
     },
     trim () {
-      this.meta.code = this.meta.code.trim()
+      this.meta.code = this.meta.code ? this.meta.code.trim() : null
 		  var self = this
 		  this.enabledLangs.forEach(function (lg) {
 		    self.meta.title[lg] = self.meta.title[lg] ? self.meta.title[lg].trim() : null

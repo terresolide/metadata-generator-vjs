@@ -84,7 +84,7 @@ export default {
         linkElement.click();
         linkElement.remove()
     },
-    addConstraintsTo (node) {
+    appendConstraintsTo (node) {
       var constraints = this.xmlDoc.createElement('gmd:resourceConstraints')
       // this.metadata.condition
       var access = this.metadata.rights.filter(rg => rg.type === 'access')
@@ -97,19 +97,34 @@ export default {
       
       // this.metadata.rights
     },
-    addExtentTo (node) {
+    appendExtentTo (node) {
       var extent = this.xmlDoc.createElement('gmd:extent')
       var exExtent = this.xmlDoc.createElement('gmd:EX_Extent')
       extent.appendChild(exExtent)
       var self = this
+      var add = false
       this.metadata.geoLocation.forEach(function (geoLocation) {
-        
         if (geoLocation.south && geoLocation.north && geoLocation.east && geoLocation.west) {
-          console.log(geoLocation)
           exExtent.appendChild(self.createGeolocation(geoLocation))
+          add = true
         }
       })
-      node.appendChild(extent)
+      if (this.metadata.temporalExtent.start) {
+        add = true
+        var temp = this.xmlDoc.createElement('gmd:temporalElement')
+        var exTemp = this.xmlDoc.createElement('gmd:EX_TemporalExtent')
+        temp.appendChild(exTemp)
+        var ext = this.xmlDoc.createElement('gmd:extent')
+        exTemp.appendChild(ext)
+        var period = this.xmlDoc.createElement('gml:TimePeriod')
+        ext.appendChild(period)
+        period.appendChild(this.createNode('gml:beginPosition', this.metadata.temporalExtent.start))
+        period.appendChild(this.createNode('gml:endPosition', this.metadata.temporalExtent.end))
+        exExtent.appendChild(temp)
+      }
+      if (add) {
+         node.appendChild(extent)
+      }
     },
     createGeolocation (obj) {
       console.log(obj)
@@ -122,9 +137,11 @@ export default {
         var card = tab[i]
          exNode.appendChild(self.createCard(obj[card], 'gmd:' + card + 'BoundLongitude'))
       }
-       ['south', 'north'].forEach(function (card) {
+      var tab =  ['south', 'north']
+      for(var i in tab) {
+        var card = tab[i]
          exNode.appendChild(self.createCard(obj[card], 'gmd:' + card + 'BoundLatitude'))
-      })
+      }
       return node
     },
     createCard (value, elt) {
@@ -133,7 +150,7 @@ export default {
       node.appendChild(this.createNode('gco:Decimal', value))
       return node
     },
-    addKeywordsTo (node) {
+    appendKeywordsTo (node) {
       // re order keywords by thesaurus and group
       var thesaurus = {
         gcmdKeyword: [],
@@ -152,15 +169,8 @@ export default {
       var self = this
       for (var key in this.metadata.subjects) {
         for(var id in this.metadata.subjects[key]) {
-          if (this.metadata.subjects[key][id].thesaurus && this.metadata.subjects[key][id].code) {
-            var complete = true
-            this.metadata.subjects[key][id].thesaurus.langs.forEach(function (lang) {
-              console.log(lang)
-              if (!self.metadata.subjects[key][id].title[lang]) {
-                complete = false
-              }
-            })
-            if (complete) {
+          if (this.metadata.subjects[key][id].thesaurus) {
+            if (this.metadata.subjects[key][id].code) {
               thesaurus[this.metadata.subjects[key][id].thesaurus.id].push(this.metadata.subjects[key][id])
             }
           } else if (this.metadata.subjects[key][id].title[this.metadata.mainLang]) {
@@ -206,6 +216,19 @@ export default {
           var ciCitation = this.xmlDoc.createElement('gmd:CI_Citation')
           ciCitation.appendChild(this.createIncludeString('gmd:title', thisThesaurus.name, thisThesaurus.scheme, lang, thisThesaurus.langs))
           ciCitation.appendChild(this.createDate(thisThesaurus.date, 'revision'))
+          if (thisThesaurus.gn) {
+            var identifier = this.xmlDoc.createElement('gmd:identifier')
+            var mdId = this.xmlDoc.createElement('gmd:MD_Identifier')
+            identifier.appendChild(mdId)
+            var name = 'external.' + thisThesaurus.type + '.' + thisThesaurus.gn
+            mdId.appendChild(this.createIncludeString(
+                'gmd:code',
+                'geonetwork.thesaurus.' + name,
+                'https://service.poleterresolide.fr/geonetwork/srv/eng/thesaurus.download?ref=' + name,
+                'en',
+                ['en']))
+          }
+          ciCitation.appendChild(identifier)
           thes.appendChild(ciCitation)
           mdKeywords.appendChild(thes)
           node.appendChild(keywords)
@@ -284,17 +307,20 @@ export default {
       identifier.appendChild(code)
       this.xmlDoc.documentElement.appendChild(syst)
 
-      this.xmlDoc.documentElement.appendChild(this.createDataIdentification())
-
+      this.appendDataIdentification()
+      this.appendDistributionInfo()
     },
     createNode (name, value) {
       var full =  this.xmlDoc.createElement(name)
-      full.appendChild(this.xmlDoc.createTextNode(value))
+      if (value !== null) {
+        full.appendChild(this.xmlDoc.createTextNode(value))
+      }
       return full
     },
-    createDataIdentification () {
+    appendDataIdentification () {
       var self = this
       var node = this.xmlDoc.createElement('gmd:identificationInfo')
+      this.xmlDoc.documentElement.appendChild(node)
       var data = this.xmlDoc.createElement('gmd:MD_DataIdentification')
       node.appendChild(data)
       var citation = this.xmlDoc.createElement('gmd:citation')
@@ -336,10 +362,12 @@ export default {
       }
       // IDENTIFIER
       if (this.metadata.doi) {
-        ciCitation.appendChild(this.createIdentifier('https://www.doi.org/' + this.metadata.doi))
+        ciCitation.appendChild(this.createIdentifier(this.metadata.doi, 'https://www.doi.org/' + this.metadata.doi ))
       }
       this.metadata.identifiers.forEach(function (identifier) {
-        ciCitation.appendChild(self.createIdentifier(identifier.identifier))
+        if (identifier.identifier) {
+          ciCitation.appendChild(self.createIdentifier(identifier.identifier))
+        }
       })
       // abstract
       if (this.metadata.descriptions.Abstract[this.metadata.mainLang]) {
@@ -357,14 +385,14 @@ export default {
         data.appendChild(contact)
       }
       this.metadata.creators.forEach(function (creator) {
-        if (creator.fullName) {
+        if (creator.fullName && creator.role !== 'distributor') {
           var contact = self.xmlDoc.createElement('gmd:pointOfContact')
           contact.appendChild(self.createContact(creator))
           data.appendChild(contact)
         }
       })
        this.metadata.contributors.forEach(function (contributor) {
-        if (contributor.fullName) {
+        if (contributor.fullName && contributor.role !== 'distributor') {
           var contact = self.xmlDoc.createElement('gmd:pointOfContact')
           contact.appendChild(self.createContact(contributor))
           data.appendChild(contact)
@@ -383,7 +411,7 @@ export default {
       
       // keywords
      
-      this.addKeywordsTo(data)
+      this.appendKeywordsTo(data)
       
       // constraints
       
@@ -423,8 +451,59 @@ export default {
       data.appendChild(topic)
       
       // extent
-      this.addExtentTo(data)
-      return node
+      this.appendExtentTo(data)
+      
+    },
+    appendDistributionInfo () {
+      var add = false
+      var distribution = this.xmlDoc.createElement('gmd:distributionInfo')
+      var mdDistrib = this.xmlDoc.createElement('gmd:MD_Distribution')
+      distribution.appendChild(mdDistrib)
+      var self = this
+      if (this.metadata.formats.length > 0) {
+        this.metadata.formats.forEach(function (format) {
+          if (format) {
+            add = true
+            var disFormat = self.xmlDoc.createElement('gmd:distributionFormat')
+            var mdFormat = self.xmlDoc.createElement('gmd:MD_Format')
+            disFormat.appendChild(mdFormat)
+            mdFormat.appendChild(self.createIncludeString('gmd:name', format, null, self.metadata.mainLang, self.metadata.langs))
+            mdDistrib.appendChild(disFormat)
+          }
+        })
+      }
+      // add Distributor
+      var distributors = this.metadata.creators.filter(cr => cr.role === 'distributor')
+      this.metadata.contributors.forEach(function (contributor) {
+        if (contributor.role === 'distributor') {
+          distributors.push(contributor)
+        }
+      })
+      console.log(distributors)
+      if (distributors.length > 0) {
+        distributors.forEach(function (distributor) {
+          if (distributor.fullName) {
+           var distrib = self.xmlDoc.createElement('gmd:distributor')
+           var mdDistributor = self.xmlDoc.createElement('gmd:MD_Distributor')
+           distrib.appendChild(mdDistributor)
+           var contact = self.xmlDoc.createElement('gmd:distributorContact')
+           contact.appendChild(self.createContact(distributor))
+           mdDistributor.appendChild(contact)
+           mdDistrib.appendChild(mdDistributor)
+           add = true
+          }
+        })
+      }
+      if (this.metadata.links.length > 0) {
+        var addLink = false
+       this.metadata.links.forEach(function (link) {
+         
+       })
+      }
+      if (add) {
+        this.xmlDoc.documentElement.appendChild(distribution)
+      }
+
     },
     createNodeCode(tag, list, code, value) {
      /// var charset = this.xmlDoc.createElement('gmd:characterSet')
@@ -437,11 +516,11 @@ export default {
       node.setAttribute('codeListValue', code)
       return node
     },
-    createIdentifier (id) {
+    createIdentifier (id, url) {
       var node = this.xmlDoc.createElement('gmd:identifier')
       var identifier = this.xmlDoc.createElement('gmd:MD_Identifier')
       node.appendChild(identifier)
-      identifier.appendChild(this.createIncludeString('gmd:code', id, null, 'en', ['en']))
+      identifier.appendChild(this.createIncludeString('gmd:code', id, url, 'en', ['en']))
       return node
     },
     createDate (date, type) {

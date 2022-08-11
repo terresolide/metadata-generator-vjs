@@ -148,6 +148,9 @@
     <div class="block-prop" >
     <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Contacts pour les données
+     <formater-tooltip  :width="400" description="<b>Datacite</b> distinguent 3 types de contacts: 
+     l'éditeur, les créateurs et les contributeurs<br>
+     <b>ISO19139</b>: différencie les contacts avec leur rôle"></formater-tooltip>
      </label>
      <div class="properties" >
        <div >
@@ -341,6 +344,11 @@
    <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Lien
+     <formater-tooltip :width="450" description="ForM@Ter mélangent des champs différents de <b>Datacite</b> et <b>ISO19139</b> 
+     <ul><li><b>Datacite</b>: page web ou dataset ou collection en lien avec la collection</li>
+     <li><b>ISO19139</b>: lien d'accès, de téléchargement, de recherche, de visualisation des données</li></ul>"></formater-tooltip>
+     
+     
      </label>
      <div class="properties">
       <div v-for="link, id in meta.links">

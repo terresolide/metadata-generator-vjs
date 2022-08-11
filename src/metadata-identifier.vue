@@ -1,7 +1,7 @@
 <template>
 <div class="identifier">
  <div style="position:absolute;top:2px;right:5px;" class="fa fa-close" @click="remove"></div>
- <div style="margin-bottom:2px;">
+ <div style="margin-bottom:2px;" >
    <label>Autorité</label>
    <span v-if="['Personal', 'Organizational'].indexOf(type) >= 0">
       <select v-model="meta.type">
@@ -10,6 +10,7 @@
      <em v-if="url[meta.type]">
      (<a :href="url[meta.type]" target="_blank">{{url[meta.type]}}</a>)
      </em>
+     <meta-mro value="M"></meta-mro>
    </span>
    <span v-else class="datacite">
 	   <input v-model="meta.type" list="types" type="text" required placeholder="local identification, URN, URL ou ..."
@@ -17,8 +18,9 @@
 	   <datalist id="types">
 	     <option v-for="tp in types" :value="tp">{{tp}}</option>
 	   </datalist>
+	   <meta-mro value="M"></meta-mro>
    </span>
-   <meta-mro value="M"></meta-mro>
+   
   </div>
  <div>
   <label> Identifiant </label>
