@@ -47,16 +47,30 @@
 	         <input  v-model="meta.langs" :value="lang" type="checkbox" />
 	       </span>
        </div>
+       <div><label class="bold line">Encodage</label>
+            <select disabled><option>utf8</option></select>
+       </div>
      </div>
    </div>
    <div class="block-prop">
      <meta-mro value="M"></meta-mro>
-     <label  @click="deploy($event)"><i class="fa"></i> Langue des données</label>
+     <label  @click="deploy($event)"><i class="fa"></i> Langue et encodage des données</label>
      <div class="properties">
-       <select v-model="meta.language">
-         <option value="en">en</option>
-         <option value="fr">fr</option>
-       </select>
+       <div style="display:inline-block;margin-right:20px;">
+         <label class="bold line">Langue</label>
+	       <select v-model="meta.language">
+	         <option value="en">en</option>
+	         <option value="fr">fr</option>
+	       </select>
+	       <meta-mro value="M"></meta-mro>
+       </div>
+         <div style="display:inline-block;" class="iso">
+         <label class="bold line">Encodage</label>
+         <select v-model="meta.charset">
+           <option v-for="charset in charsets" :value="charset">{{charset}}</option>
+         </select>
+         <meta-mro value="M"></meta-mro>
+       </div>
      </div>
    </div>
    <div class="block-prop">
@@ -498,6 +512,9 @@ export default {
         notPlanned: 'non-planifiée',
         unknown: 'inconnue'
       },
+      charsets: ['utf7', 'utf8', 'utf16', 'usAscii', 'ucs2', 'ucs4', '8859part1', '8859part2', '8859part3', '8859part4', '8859part5',
+        '8859part6', '8859part7', '8859part8', '8859part9', '8859part10', '8859part11', '8859part12', '8859part13', '8859part14',
+        '8859part15', '8859part16', 'jis', 'shiftJIS', 'eucJP', 'ebcdic', 'eucKR', 'big5', 'GB2312'],
       referentielCode: null,
       epsgList:  [
         { id: "2154", name: "RGF93 v1 / Lambert-93", comment: "France"},
@@ -549,6 +566,7 @@ export default {
         },
         mainLang: 'fr',
         language: 'en',
+        charset: 'utf8',
         resourceType: 'Collection of',
         identifiers: [],
         links: [],
@@ -646,7 +664,7 @@ export default {
           identifier: 'CC-BY-NC-4.0'}
     },
     addKeyword (type) {
-      this.meta.subjects[type].push({title:{fr: null, en: null}, thesaurus: null, thesaurusId: -1, code: null})
+      this.meta.subjects[type].push({title:{fr: null, en: null}, type: this.keywordType(type), thesaurus: null, thesaurusId: -1, code: null})
     },
     addLink () {
       this.meta.links.push({url: null, relation: 'IsDocumentedBy', type: 'URL', typeiso: 'information', lang: 'en', title: {fr: null, en: null}, description: {fr: null, en: null}})
@@ -744,6 +762,19 @@ export default {
         node.classList.remove('deployed')
       } else {
         node.classList.add('deployed')
+      }
+    },
+    keywordType (group) {
+      switch (group) {
+	      case 'discipline':
+	        return 'discipline'
+	      case 'featureOfInterest':
+	        return 'place'
+	//       case 'variable':
+	//       case 'platform':
+	//       case 'productType':
+	     default:
+	        return 'theme'
       }
     },
     mainLangChange () {
@@ -910,6 +941,7 @@ span.circle {
   vertical-align:middle;
   height:19px;
 }
+
 label.bold {
   font-weight:700;
 }
@@ -967,6 +999,9 @@ span.label {
 
   display:inline-block;
   vertical-align:top;
+}
+label.line {
+  vertical-align: baseline;
 }
 div.block-prop > label {
   font-weight:700;

@@ -24,12 +24,27 @@
         <i class="fa fa-search"></i> Rechercher
        </a>
    </div>
+   <div v-if="type === 'other'">
+     <label>Type</label>
+     <select v-model="meta.type">
+        <option value="discipline">Discipline</option>
+        <option value="place">Localisation</option>
+        <option value="stratum">Couche géologique</option>
+        <option value="temporal">Temporel</option>
+        <option value="theme">Sujet particulier</option>
+     </select>
+     <formater-tooltip description="En cas de doute, mettre <em>Sujet particulier</em>"></formater-tooltip>
+   </div>
   </div>
 </div>
 </template>
 <script>
+import FormaterTooltip from './formater-tooltip.vue'
 export default {
   name: 'MetadataKeyword',
+  components: {
+    FormaterTooltip
+  },
   props: {
     id: {
       type: Number,
@@ -73,42 +88,63 @@ export default {
       thesauri: {
         discipline: [
           {
+            id: 'gcmdKeyword',
             name: 'GCMD sciencekeywords', 
             schemeUrl: 'https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords', 
             valueRoot: 'https://gcmd.earthdata.nasa.gov/kms/concept/', 
             searchUrl: 'https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/Earth%20Science?gtm_scheme=Earth%20Science',
+            date: '2022-07-27 15:38:36',
+            type: 'theme',
             langs: ['en']
           }, {
+            id: 'fmtDiscipline',
             name: 'ForM@Ter - Disciplines et thèmes pour la Terre Solide',
             schemeUrl: 'https://service.poleterresolide.fr/voc/science_field',
             valueRoot: 'https://service.poleterresolide.fr/voc/science_field/',
             searchUrl: 'https://service.poleterresolide.fr/voc/science_field',
+            gn: '.formater-discipline-gn',
+            type: 'discipline',
+            date: '2021-06-23 07:02:17',
             langs: ['fr', 'en']
           }],
         platform: [ {
+          id: 'gcmdPlatform',
           name: 'GCMD platforms', 
           schemeUrl: 'https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/platforms', 
           valueRoot: 'https://gcmd.earthdata.nasa.gov/kms/concept/', 
           searchUrl: 'https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/platforms?gtm_scheme=platforms',
+          date: '2022-08-09 14:34:26',
+          type: 'theme',
           langs: ['en']
          }, {
+           id: 'fmtPlatform',
            name: 'ForM@Ter - Plateformes',
            schemeUrl: 'https://service.poleterresolide.fr/voc/platform',
            valueRoot: 'https://service.poleterresolide.fr/voc/platform/',
            searchUrl: 'https://service.poleterresolide.fr/voc/platform',
+           date: '2021-06-24 05:43:04',
+           gn: 'formater-platform-gn',
+           type: 'theme',
            langs: ['fr', 'en']
          }],
         variable: [ {
+            id: 'gcmdKeyword',
             name: 'GCMD sciencekeywords', 
             schemeUrl: 'https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords', 
             valueRoot: 'https://gcmd.earthdata.nasa.gov/kms/concept/', 
             searchUrl: 'https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/Earth%20Science?gtm_scheme=Earth%20Science',
+            date: '2022-07-27 15:38:36',
+            type: 'theme',
             langs: ['en']
            }, {
+             id: 'fmtVariable',
              name: 'ForM@Ter - Variables',
              schemeUrl: 'https://service.poleterresolide.fr/voc/variable',
              valueRoot: 'https://service.poleterresolide.fr/voc/variable/',
              searchUrl: 'https://service.poleterresolide.fr/voc/variable',
+             date: '2021-06-23 09:53:17',
+             type: 'theme',
+             gn: 'formater-variable-gn',
              langs: ['fr', 'en']
            }],
         productType: [],

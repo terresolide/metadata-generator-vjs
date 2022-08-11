@@ -84,6 +84,85 @@ export default {
         linkElement.click();
         linkElement.remove()
     },
+    addKeywordsTo (node) {
+      // re order keywords by thesaurus and group
+      var thesaurus = {
+        gcmdKeyword: [],
+        fmtDiscipline: [],
+        fmtVariable: [],
+        gcmdPlatform: [],
+        fmtPlatform: []
+      }
+      var noThesaurus = {
+        discipline: [],
+        theme: [],
+        stratum: [],
+        place: [],
+        temporal: []
+      }
+      var self = this
+      for (var key in this.metadata.subjects) {
+        for(var id in this.metadata.subjects[key]) {
+          if (this.metadata.subjects[key][id].thesaurus && this.metadata.subjects[key][id].code) {
+            var complete = true
+            this.metadata.subjects[key][id].thesaurus.langs.forEach(function (lang) {
+              console.log(lang)
+              if (!self.metadata.subjects[key][id].title[lang]) {
+                complete = false
+              }
+            })
+            if (complete) {
+              thesaurus[this.metadata.subjects[key][id].thesaurus.id].push(this.metadata.subjects[key][id])
+            }
+          } else if (this.metadata.subjects[key][id].title[this.metadata.mainLang]) {
+            noThesaurus[this.metadata.subjects[key][id].type].push(this.metadata.subjects[key][id].title)
+          }
+        }
+      } 
+      var self = this
+      for (var type in noThesaurus) {
+        if (noThesaurus[type].length > 0) {
+          var keywords = self.xmlDoc.createElement('gmd:descriptiveKeywords')
+          var mdKeywords = self.xmlDoc.createElement('gmd:MD_Keywords')
+          keywords.appendChild(mdKeywords)
+          noThesaurus[type].forEach(function (subject) {
+            mdKeywords.appendChild(self.createIncludeString('gmd:keyword', subject, null, self.metadata.mainLang, self.metadata.langs))
+          })
+          var ntype = self.xmlDoc.createElement('gmd:type')
+          
+          ntype.appendChild(self.createNodeCode('gmd:MD_KeywordTypeCode', 'keywordType', type))
+          mdKeywords.appendChild(ntype)
+          node.appendChild(keywords)
+        }
+      }
+      for (var tid in thesaurus) {
+        if (thesaurus[tid].length > 0) {
+          var thisThesaurus = thesaurus[tid][0].thesaurus
+          var lang = this.metadata.mainLang
+          if (thisThesaurus.langs.indexOf(lang) < 0) {
+            lang = thisThesaurus.langs[0]
+          }
+          var keywords = self.xmlDoc.createElement('gmd:descriptiveKeywords')
+          var mdKeywords = self.xmlDoc.createElement('gmd:MD_Keywords')
+          keywords.appendChild(mdKeywords)
+          thesaurus[tid].forEach(function (subject) {
+            mdKeywords.appendChild(self.createIncludeString('gmd:keyword', subject.title, thisThesaurus.valueRoot + subject.code , lang, thisThesaurus.langs))
+            
+          })
+          var ntype = self.xmlDoc.createElement('gmd:type')
+          
+          ntype.appendChild(self.createNodeCode('gmd:MD_KeywordTypeCode', 'keywordType', thisThesaurus.type))
+          mdKeywords.appendChild(ntype)
+          var thes = this.xmlDoc.createElement('gmd:thesaurusName')
+          var ciCitation = this.xmlDoc.createElement('gmd:CI_Citation')
+          ciCitation.appendChild(this.createIncludeString('gmd:title', thisThesaurus.name, thisThesaurus.scheme, lang, thisThesaurus.langs))
+          ciCitation.appendChild(this.createDate(thisThesaurus.date, 'revision'))
+          thes.appendChild(ciCitation)
+          mdKeywords.appendChild(thes)
+          node.appendChild(keywords)
+        }
+      }
+    },
     createISO19139 () {
       // var xmlDoc = new Document()null;
       var self = this
@@ -254,6 +333,10 @@ export default {
       // graphic overview
       
       // keywords
+     
+      this.addKeywordsTo(data)
+      
+      // constraints
       
       // spatial representation type
       var sp = this.xmlDoc.createElement('gmd:spatialRepresentationType')
@@ -276,13 +359,13 @@ export default {
       // language
       var lang = this.xmlDoc.createElement('gmd:language')
      // var gco = this.createNode('gco:CharacterString', this.metadata.lang === 'fr' ? 'fre' : 'eng')
-      lang.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', this.metadata.lang === 'fr' ? 'fre' : 'eng', null))
+      lang.appendChild(self.createNodeCode('gmd:LanguageCode', 'language', this.metadata.language === 'fr' ? 'fre' : 'eng', null))
       // lang.appendChild(gco)
       data.appendChild(lang)
       
       // character set
       var charset = this.xmlDoc.createElement('gmd:characterSet')
-      charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', 'utf8'))
+      charset.appendChild(this.createNodeCode('gmd:MD_CharacterSetCode', 'charset', this.metadata.charset))
       data.appendChild(charset)
       
       // topic category
