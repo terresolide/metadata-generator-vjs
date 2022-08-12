@@ -512,7 +512,7 @@ export default {
        })
       }
       if (addLink) {
-        distribution.appendChild(transferOptions)
+        mdDistrib.appendChild(transferOptions)
         add = true
       }
       if (add) {
