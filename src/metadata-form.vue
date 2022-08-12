@@ -25,7 +25,7 @@
 	  <div style="clear:both;height:0;">
 	  </div>
   </div>
-    <div class="block-prop">
+  <div class="block-prop">
      <meta-mro value="M"></meta-mro>
      <label  @click="deploy($event)"><i class="fa"></i> Langue des metadonnées
        <formater-tooltip description="Pour Datacite, il vaut mieux <b>anglais</b>, pour ForM@Ter privilégiez le <b>français</b>.
@@ -120,7 +120,7 @@
     <meta-mro value="M"></meta-mro>
      <label  @click="deploy($event)"><i class="fa"></i> Identifiant de la collection
      <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
-     Pour l'<b>ISO19139</b>, au moins un identifiant <b>unique</b>, quel qu'il soit, est attendu">
+     Pour l'<b>ISO19139</b>, au moins un identifiant <b>unique</b>, autre que le DOI,  quel qu'il soit, est attendu">
      </formater-tooltip>
      </label>
      <div class="properties">
@@ -130,7 +130,8 @@
          <meta-mro value="M"></meta-mro>
        </div>
        <div v-for="identifier, id in meta.identifiers">
-          <metadata-identifier :id="id" :identifier="identifier" @remove="removeIdentifier" @change="changeIdentifier"></metadata-identifier>
+          <metadata-identifier :id="id" :identifier="identifier"
+          :erasable="meta.identifiers.length > 1" @remove="removeIdentifier" @change="changeIdentifier"></metadata-identifier>
        </div>
        <input type="button" value="Ajouter identifiant" title="ajouter un identifiant" @click="addIdentifier" />
      </div>
@@ -150,7 +151,9 @@
      <label @click="deploy($event)"><i class="fa"></i> Contacts pour les données
      <formater-tooltip  :width="400" description="<b>Datacite</b> distinguent 3 types de contacts: 
      l'éditeur, les créateurs et les contributeurs<br>
-     <b>ISO19139</b>: différencie les contacts avec leur rôle"></formater-tooltip>
+     <b>ISO19139</b>: différencie les contacts avec leur rôle, si un contact a plusieurs rôles, saisir autant de fois que nécessaire
+     le contact<br>
+     <i class='fa fa-warning'></i> Les contacts de rôle <em>distributor</em> seront placés dans la section <em>distributionInfo</em>"></formater-tooltip>
      </label>
      <div class="properties" >
        <div >
@@ -341,12 +344,12 @@
      <div class="properties">
       </div>
    </div>
-   <div class="block-prop">
+    <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Lien
      <formater-tooltip :width="450" description="ForM@Ter mélangent des champs différents de <b>Datacite</b> et <b>ISO19139</b> 
      <ul><li><b>Datacite</b>: page web ou dataset ou collection en lien avec la collection</li>
-     <li><b>ISO19139</b>: lien d'accès, de téléchargement, de recherche, de visualisation des données</li></ul>"></formater-tooltip>
+     <li><b>ISO19139</b>: lien d'accès, de téléchargement, de recherche...</li></ul>"></formater-tooltip>
      
      
      </label>
@@ -355,6 +358,20 @@
         <metadata-link :link="link" :id="id" :langs="meta.langs" @change="changeLink" @remove="removeLink"></metadata-link>
       </div>
       <input type="button" value="Ajouter lien" @click="addLink"/>
+      </div>
+   </div>
+    <div class="block-prop iso">
+     <meta-mro value="O"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Service
+     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS...."></formater-tooltip>
+     
+     
+     </label>
+     <div class="properties">
+      <div v-for="service, id in meta.services">
+        <metadata-service :service="service" :id="id" :langs="meta.langs" @change="changeService" @remove="removeService"></metadata-service>
+      </div>
+      <input type="button" value="Ajouter service" @click="addService"/>
       </div>
    </div>
    <div class="block-prop">
@@ -410,9 +427,22 @@
           <input v-if="!meta.rights.license" type="button" value="Ajouter CC-BY-NC-4.0" @click="addLicenseCC" />
           <input v-if="!meta.rights.license" type="button" value="Ajouter autre license" @click="addLicense" />
        </div>
+       <div>
+           <span class="label iso" style="display:block;min-width:200px;">
+             Comment citer
+             <meta-mro value="O"></meta-mro>
+           </span>
+           <div v-if="meta.rights.howToCite" class="iso" style="width:100%;margin-left:-15px;" >
+           <metadata-right :id="-1" :right="meta.rights.howToCite" :langs="meta.langs" :condition="meta.condition" 
+           @remove="removeHowToCite" @change="changeHowToCite"></metadata-right>
+           </div>
+           <div v-else>
+             <input type="button" value="Ajouter citation" @click="addHowToCite"/>
+           </div>
+       </div>
        <div v-if="!(meta.condition.access && meta.condition.use)">
           <span class="label" style="display:block;">Autre</span>
-          <metadata-right v-for="right, id in meta.rights.others" :key="id" :id="id" :right="right" 
+           <metadata-right v-for="right, id in meta.rights.others" :key="id" :id="id" :right="right" 
           :langs="meta.langs" :condition="meta.condition" @change="changeRight" @remove="removeRight"></metadata-right>
           <input type="button" value="Ajouter condition" @click="addRight" />
         </div>
@@ -441,6 +471,7 @@ const MetadataBbox = () => import('./metadata-bbox.vue')
 const MetadataKeyword = () => import('./metadata-keyword.vue')
 const MetadataLicense = () => import('./metadata-license.vue')
 const MetadataLink = () => import('./metadata-link.vue')
+const MetadataService = () => import('./metadata-service.vue')
 const MetadataResolution = () => import('./metadata-resolution.vue')
 const MetadataRight = () => import('./metadata-right.vue')
 import MetaMro from './metadata-mro.vue'
@@ -458,6 +489,7 @@ export default {
     MetadataLink,
     MetadataResolution,
     MetadataRight,
+    MetadataService,
     MetadataContact,
     MetadataDate,
     FormaterTooltip,
@@ -468,6 +500,21 @@ export default {
     metadata: {
       type: Object,
       default: null
+    }
+  },
+  computed: {
+    citation () {
+      if (!this.meta.doi) {
+        return null
+      } 
+      var citation = this.meta.creators[0].fullName ? this.meta.creators[0].fullName : ''
+      var year = this.meta.publicationDate ? this.meta.publicationDate.substr(0,4) : ''
+      citation += ' (' + year + '): ' 
+      var title = this.meta.title[this.meta.mainLang] ? this.meta.title[this.meta.mainLang] : ''
+      citation += title + '. '
+      var publisher = this.meta.publisher.fullName ? this.meta.publisher.fullName : ''
+      citation += publisher + '.(Collection). https://doi.org/' + this.meta.doi
+      return citation
     }
   },
   data () {
@@ -576,8 +623,9 @@ export default {
         language: 'en',
         charset: 'utf8',
         resourceType: 'Collection of',
-        identifiers: [],
+        identifiers: [{type:null, identifier: null}],
         links: [],
+        services: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
         metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', nameType: 'Organizational'},
         contributors: [],
@@ -592,7 +640,7 @@ export default {
           access: 'unknown',
           use: 'unknown'
         },
-        rights: {license: null, others: []},
+        rights: {license: null, howToCite: null, others: []},
         resolutions: []
       }
     },
@@ -612,6 +660,13 @@ export default {
     },
     drawBbox (bbox) {
       this.bboxId = bbox.id
+    },
+    doiChange (event) {
+      event.target.value = event.target.value.trim()
+      if (event.target.value) {
+        
+      }
+      this.change()
     },
     propertyChange (event) {
       // validation
@@ -659,6 +714,16 @@ export default {
     addFormat () {
       this.meta.formats.push('')
     },
+    addHowToCite () {
+      this.meta.rights.howToCite = {
+          type: 'use',
+          title: {
+            fr: 'Comment citer la collection: ',
+            en: 'How to cite'
+          },
+          url: {fr: null, en: null}
+      }
+    },
     addIdentifier () {
       this.meta.identifiers.push({})
     },
@@ -682,6 +747,9 @@ export default {
     },
     addRight () {
       this.meta.rights.others.push({title:{fr: null, en: null}, url: {fr:null, en:null}})
+    },
+    addService () {
+      this.meta.services.push({url: null, protocole: 'OGC:WMS', title: {fr: null, en: null}, description: {fr: null, en: null}})
     },
     change () {
       this.$emit('change', this.meta)
@@ -722,6 +790,9 @@ export default {
       this.meta.identifiers[obj.id] = obj.identifier
       this.change()
     },
+    changeHowToCite (obj) {
+      this.meta.rights.howToCite = obj.right
+    },
     changeKeyword (obj) {
       this.meta.subjects[obj.type][obj.id] = obj.keyword
     },
@@ -747,6 +818,10 @@ export default {
     },
     changeRight (obj) {
       this.meta.rights.others[obj.id] = obj.right
+      this.change()
+    },
+    changeService(obj) {
+      this.meta.services[obj.id] = obj.service
       this.change()
     },
 //     exportJSON () {
@@ -858,6 +933,9 @@ export default {
       this.meta.identifiers.splice(id, 1)
       this.change()
     },
+    removeHowToCite (id) {
+      this.meta.rights.howToCite = null
+    },
     removeKeyword (obj) {
       this.meta.subjects[obj.type].splice(obj.id, 1)
       this.change()
@@ -878,6 +956,11 @@ export default {
     removeRight (id) {
       this.meta.rights.others.splice(id, 1)
       this.change()
+    },
+    removeService (id) {
+      this.meta.services.splice(id, 1)
+      this.change()
+      
     }
   }
 }

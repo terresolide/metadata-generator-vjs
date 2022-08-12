@@ -1,8 +1,8 @@
 <template>
 <div class="block-element">
-   <span class="circle">{{id + 1 }}</span>
+   <span class="circle" v-if="id > -1">{{id + 1 }}</span>
   <div class="element-content">
-     <div style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
+     <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
     <div>
     <label style="font-weight:700;vertical-align:baseline;">Type</label>
       <select v-model="meta.type">
@@ -18,7 +18,7 @@
        </div>
  
      </div>
-     <div class="datacite">
+     <div class="datacite" v-if="id > -1">
        <span class="label" style="min-width:80px;vertical-align:baseline;">Url</span>
         <div v-for="lg in langs" style="margin-bottom:3px;margin-left:5px;">
          <span class="label">{{lg}}</span>
@@ -49,7 +49,7 @@ export default {
     },
     condition: {
       type: Object,
-      default: null
+      default: () => {return {access: null, use: null}}
     },
     langs: {
       type: Array,

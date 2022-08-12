@@ -361,9 +361,9 @@ export default {
         ciCitation.appendChild(this.createDate(dateRevisions[0].date, 'revision'))
       }
       // IDENTIFIER
-      if (this.metadata.doi) {
-        ciCitation.appendChild(this.createIdentifier(this.metadata.doi, 'https://www.doi.org/' + this.metadata.doi ))
-      }
+//       if (this.metadata.doi) {
+//         ciCitation.appendChild(this.createIdentifier('doi:' + this.metadata.doi, 'https://www.doi.org/' + this.metadata.doi ))
+//       }
       this.metadata.identifiers.forEach(function (identifier) {
         if (identifier.identifier) {
           ciCitation.appendChild(self.createIdentifier(identifier.identifier))
@@ -494,16 +494,68 @@ export default {
           }
         })
       }
+      var addLink = false
+      var transferOptions = this.xmlDoc.createElement('gmd:transferOptions')
+      var mdTransferOptions = this.xmlDoc.createElement('MD_DigitalTransferOptions')
+      transferOptions.appendChild(mdTransferOptions)
+      if (this.metadata.doi) {
+        addLink = true
+        transferOptions.appendChild(this.createDoi(this.metadata.doi))
+      }
       if (this.metadata.links.length > 0) {
-        var addLink = false
+       
        this.metadata.links.forEach(function (link) {
-         
+          if (link.url) {
+            transferOptions.appendChild(self.createOnLine(link))
+            addLink = true
+          }
        })
+      }
+      if (addLink) {
+        distribution.appendChild(transferOptions)
+        add = true
       }
       if (add) {
         this.xmlDoc.documentElement.appendChild(distribution)
       }
 
+    },
+    
+    createDoi (doi) {
+      var link = {
+          type: 'DOI',
+          url: doi,
+          typeiso: 'information',
+          title: 'doi:' + doi,
+          description: {
+            fr: 'Page de doi:' + doi,
+            en: 'Landing page doi:' + doi
+          }
+      }
+      return this.createOnLine(link)
+    },
+    createOnLine (link) {
+      var onLine = this.xmlDoc.createElement('gmd:onLine')
+      var olResource = this.xmlDoc.createElement('gmd:CI_OnLineResource')
+      onLine.appendChild(olResource)
+      var linkage = this.xmlDoc.createElement('gmd:linkage')
+      var url = link.url
+      var protocole = link.protocole
+      if (link.type){
+        protocole = 'WWW:LINK-1.0-http--link'
+        if (link.type === 'DOI') {
+          url = 'https://www.doi.org/' + link.url
+        }
+      }
+      linkage.appendChild(this.createNode('gmd:URL', url))
+      olResource.appendChild(linkage)
+      olResource.appendChild(this.createIncludeString('gmd:protocol', protocole, null, 'en', ['en']))
+      olResource.appendChild(this.createIncludeString('gmd:name', link.title, null, this.metadata.mainLang, this.metadata.langs))
+      olResource.appendChild(this.createIncludeString('gmd:description', link.description, null, this.metadata.mainLang, this.metadata.langs))
+      var funct = this.xmlDoc.createElement('gmd:function')
+      funct.appendChild(this.createNodeCode('gmd:CI_OnLineFunctionCode', 'link', link.typeiso))
+      olResource.appendChild(funct)
+      return onLine
     },
     createNodeCode(tag, list, code, value) {
      /// var charset = this.xmlDoc.createElement('gmd:characterSet')

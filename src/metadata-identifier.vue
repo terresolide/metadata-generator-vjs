@@ -1,6 +1,8 @@
 <template>
 <div class="identifier">
- <div style="position:absolute;top:2px;right:5px;" class="fa fa-close" @click="remove"></div>
+  <div class="iso" v-if="type === 'article' && id === 0" style="position:absolute;top:2px;right:5px;"><meta-mro value="M"></meta-mro></div>
+ <div  v-else style="position:absolute;top:2px;right:5px;" class="fa fa-close" @click="remove"></div>
+
  <div style="margin-bottom:2px;" >
    <label>Autorité</label>
    <span v-if="['Personal', 'Organizational'].indexOf(type) >= 0">
@@ -48,6 +50,10 @@
      type: {
        type: String,
        default: 'article'
+     },
+     erasable: {
+       type: Boolean,
+       default: true
      }
    },
    watch: {
