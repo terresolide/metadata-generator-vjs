@@ -275,7 +275,7 @@
    </div>
    <div class="block-prop iso">
      <meta-mro value="M"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Référentiel de coordonnées
+     <label @click="deploy($event)"><i class="fa"></i> Référentiel des coordonnées
        <formater-tooltip description="Il s'agit du référentiel utilisé pour les produits/données.
        <br>Si non pertinent: laissez le WGS 84 (2D) utilisé pour les métadonnées.<br>
        Une liste de référentiels est proposée, si le référentiel utilisé ne s'y trouve pas, vous devez saisir au moins son nom."></formater-tooltip>
@@ -304,7 +304,7 @@
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)">
        <i class="fa"></i> 
-       Format 
+       Format des ressources
        <formater-tooltip description="Indiquez l'extension des fichiers de données ou son type MIME.<br>
      <b>Exemples</b>: <em>tif, txt, xml, pdf, png</em> ou encore <em>image/tif, application/xml....</em> ">
      </formater-tooltip>
@@ -319,7 +319,7 @@
    </div>
     <div class="block-prop">
      <meta-mro value="R"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Mots-clés 
+     <label @click="deploy($event)"><i class="fa"></i> Mot-clé 
      </label>
      <div class="properties">
       <div v-for="keywords, type in meta.subjects" style="margin-bottom:5px;">
@@ -363,7 +363,16 @@
     <div class="block-prop iso">
      <meta-mro value="O"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Service
-     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS...."></formater-tooltip>
+     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour ForM@Ter et 
+     le protocole n'est pas toujours bien entré par les responsables!
+     Pour le moment, nous sommes en capacité d'utiliser les services pour les protocoles:
+     <ul>
+       <li>WFS</li>
+	     <li>WMS: OGC:WMS, OGC:WMS-1.1.1-http-get-capabilities ...</li>
+	     <li>WMTS</li>
+	     <li>XYZ-Tile-Service</li>
+	     <li>OpenSearch</li>
+     </ul>"></formater-tooltip>
      
      
      </label>
@@ -408,18 +417,18 @@
          <tbody>
            <tr>
              <td>Condition d'accès</td>
-             <td>  <input type="checkbox" :checked="meta.condition.access === 'no'" @click="changeCondition('access', 'no')"/> </td>
-             <td>  <input type="checkbox" :checked="meta.condition.access === 'unknown'" @click="changeCondition('access', 'unknown')"/> </td>
+             <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'no'" @click="changeCondition('access', 'no')"/> </td>
+             <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'unknown'" @click="changeCondition('access', 'unknown')"/> </td>
            </tr>
            <tr>
              <td>Condition d'utilisation</td>
-             <td>  <input type="checkbox" :checked="meta.condition.use === 'no'" @click="changeCondition('use', 'no')"/> </td>
-             <td>  <input type="checkbox" :checked="meta.condition.use === 'unknown'" @click="changeCondition('use', 'unknown')"/> </td>
+             <td>  <input type="checkbox" :disabled="useCondition" :checked="meta.condition.use === 'no'" @click="changeCondition('use', 'no')"/> </td>
+             <td>  <input type="checkbox" :disabled="useCondition" :checked="meta.condition.use === 'unknown'" @click="changeCondition('use', 'unknown')"/> </td>
            </tr>
          </tbody>
        </table>
         
-       <div style="margin-bottom:5px;" v-if="!meta.condition.use"> 
+       <div style="margin-bottom:5px;" > 
           <span class="label" style="display:block;">License</span>
           <div v-if="meta.rights.license">
             <metadata-license :license="meta.rights.license" @remove="removeLicense" @change="changeLicense" ></metadata-license>
@@ -430,20 +439,19 @@
        <div>
            <span class="label iso" style="display:block;min-width:200px;">
              Comment citer
-             <meta-mro value="O"></meta-mro>
+             <meta-mro value="R"></meta-mro>
+             <input type="button" :value="meta.rights.howToCite ? 'Mettre à jour' : 'Ajouter citation'" @click="addHowToCite"/>
            </span>
            <div v-if="meta.rights.howToCite" class="iso" style="width:100%;margin-left:-15px;" >
-           <metadata-right :id="-1" :right="meta.rights.howToCite" :langs="meta.langs" :condition="meta.condition" 
-           @remove="removeHowToCite" @change="changeHowToCite"></metadata-right>
+           <metadata-right :id="-1" :right="meta.rights.howToCite" :langs="meta.langs"  
+           @remove="removeHowToCite" @change="changeHowToCite" ></metadata-right>
            </div>
-           <div v-else>
-             <input type="button" value="Ajouter citation" @click="addHowToCite"/>
-           </div>
+           
        </div>
-       <div v-if="!(meta.condition.access && meta.condition.use)">
+       <div >
           <span class="label" style="display:block;">Autre</span>
            <metadata-right v-for="right, id in meta.rights.others" :key="id" :id="id" :right="right" 
-          :langs="meta.langs" :condition="meta.condition" @change="changeRight" @remove="removeRight"></metadata-right>
+          :langs="meta.langs"  @change="changeRight" @remove="removeRight" @typeChange="changeRightType"></metadata-right>
           <input type="button" value="Ajouter condition" @click="addRight" />
         </div>
      </div>
@@ -504,21 +512,27 @@ export default {
   },
   computed: {
     citation () {
-      if (!this.meta.doi) {
-        return null
-      } 
-      var citation = this.meta.creators[0].fullName ? this.meta.creators[0].fullName : ''
-      var year = this.meta.publicationDate ? this.meta.publicationDate.substr(0,4) : ''
+      var creators = []
+      this.meta.creators.forEach(function (creator) {
+        if (creator.fullName) {
+          creators.push(creator.fullName)
+        }
+      })
+      var citation = creators.length > 0 ? creators.join('; ') : 'Créateur'
+      var year = this.meta.publicationDate ? this.meta.publicationDate.substr(0,4) : 'Année publication'
       citation += ' (' + year + '): ' 
-      var title = this.meta.title[this.meta.mainLang] ? this.meta.title[this.meta.mainLang] : ''
+      var title = this.meta.title[this.meta.mainLang] ? this.meta.title[this.meta.mainLang] : 'Titre'
       citation += title + '. '
-      var publisher = this.meta.publisher.fullName ? this.meta.publisher.fullName : ''
-      citation += publisher + '.(Collection). https://doi.org/' + this.meta.doi
+      citation += this.meta.publisher.fullName ? this.meta.publisher.fullName : 'Editeur'
+      citation += '. (Collection), '
+      citation += this.meta.doi ?  'https://doi.org/' + this.meta.doi : 'url doi'
       return citation
     }
   },
   data () {
     return {
+      accessCondition: false,
+      useCondition: false,
       bboxId: -1,
       categories: {
         discipline: 'Discipline',
@@ -715,26 +729,31 @@ export default {
       this.meta.formats.push('')
     },
     addHowToCite () {
+      this.meta.condition.use = null
       this.meta.rights.howToCite = {
           type: 'use',
           title: {
-            fr: 'Comment citer la collection: ',
-            en: 'How to cite'
+            fr: 'Comment citer la collection: "' + this.citation + '"',
+            en: 'How to cite: "' + this.citation + '"'
           },
           url: {fr: null, en: null}
       }
+      this.updateCondition()
     },
     addIdentifier () {
       this.meta.identifiers.push({})
     },
     addLicense () {
       this.meta.rights.license = {name: null, uri: null, identifier: null}
+      this.updateCondition()
     },
     addLicenseCC () {
+      this.meta.condition.use = null
       this.meta.rights.license = {
           name: 'Creative Commons Attribution Non Commercial 4.0 International', 
           uri: 'https://creativecommons.org/licenses/by-nc/4.0/legalcode', 
           identifier: 'CC-BY-NC-4.0'}
+      this.updateCondition()
     },
     addKeyword (type) {
       this.meta.subjects[type].push({title:{fr: null, en: null}, type: this.keywordType(type), thesaurus: null, thesaurusId: -1, code: null})
@@ -746,7 +765,8 @@ export default {
       this.meta.resolutions.push({value: null, unit: 'm'})
     },
     addRight () {
-      this.meta.rights.others.push({title:{fr: null, en: null}, url: {fr:null, en:null}})
+      this.meta.rights.others.push({type: 'use', title:{fr: null, en: null}, url: {fr:null, en:null}})
+      this.updateCondition()
     },
     addService () {
       this.meta.services.push({url: null, protocole: 'OGC:WMS', title: {fr: null, en: null}, description: {fr: null, en: null}})
@@ -818,6 +838,13 @@ export default {
     },
     changeRight (obj) {
       this.meta.rights.others[obj.id] = obj.right
+      this.updateCondition()
+      this.change()
+    },
+    changeRightType (obj) {
+      console.log('changeRight')
+      this.meta.rights.others[obj.id].type = obj.type
+      this.updateCondition()
       this.change()
     },
     changeService(obj) {
@@ -864,18 +891,14 @@ export default {
 //       console.log(e)
 //       this.meta.mainLang = e.target.value === 'fr' ? 'en' : 'fr'
       var index = this.meta.langs.indexOf(this.meta.mainLang)
-      console.log(index)
       if (index === 1) {
         this.meta.langs.pop()
         this.meta.langs.unshift(this.meta.mainLang)
       } else if (index < 0) {
         this.meta.langs.unshift(this.meta.mainLang)
       }
-      console.log(this.meta.mainLang)
-      console.log(this.meta.langs)
     },
     referentielChange () {
-      console.log(this.referentielCode)
       if (this.referentielCode) {
         var find = this.epsgList.find(epsg => epsg.id === this.referentielCode)
         if (find) {
@@ -923,10 +946,7 @@ export default {
       this.change()
     },
     removeFormat (id) {
-      console.log(id)
-      console.log(this.meta.formats)
       this.meta.formats.splice(id, 1)
-      console.log(this.meta.formats)
       this.change()
     },
     removeIdentifier (id) {
@@ -935,6 +955,8 @@ export default {
     },
     removeHowToCite (id) {
       this.meta.rights.howToCite = null
+      this.updateCondition()
+      this.change()
     },
     removeKeyword (obj) {
       this.meta.subjects[obj.type].splice(obj.id, 1)
@@ -942,6 +964,7 @@ export default {
     },
     removeLicense () {
       this.meta.rights.license = null
+      this.updateCondition()
       this.change()
     },
     removeLink (id) {
@@ -955,12 +978,45 @@ export default {
     },
     removeRight (id) {
       this.meta.rights.others.splice(id, 1)
+      this.updateCondition()
       this.change()
     },
     removeService (id) {
       this.meta.services.splice(id, 1)
       this.change()
       
+    },
+    updateCondition () {
+      var used = this.meta.rights.others.filter(rg => rg.type === 'use' || rg.type === 'both')
+      if (this.meta.rights.license) {
+        used.push({})
+      }
+      if (this.meta.rights.howToCite) {
+        used.push({})
+      }
+      console.log(used.length)
+      if (used.length > 0) {
+        this.useCondition = true
+        this.meta.condition.use = null
+      } else {
+        this.useCondition = false
+        if (!this.meta.condition.use) {
+          this.meta.condition.use = 'unknown'
+        }
+      }
+      var access = this.meta.rights.others.filter(rg => rg.type === 'access' || rg.type === 'both')
+      console.log(access.length)
+      if (access.length > 0) {
+        this.accessCondition = true
+        this.meta.condition.access = null
+      } else  {
+        this.accessCondition = false
+        if (!this.meta.condition.access) {
+          this.meta.condition.access = 'unknown'
+        }
+      }
+      console.log('used', this.useCondition)
+      console.log('access', this.accessCondition)
     }
   }
 }

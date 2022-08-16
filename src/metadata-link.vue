@@ -109,7 +109,7 @@ export default {
         description: {fr: null, en: null}
       },
       languages: ['en', 'fr'],
-      types: ['information', 'search', 'order', 'offlineAccess'],
+      types: ['information', 'search', 'download', 'order', 'offlineAccess'],
       relations:['IsCitedBy','Cites', 'IsSupplementTo','IsSupplementedBy', 'IsContinuedBy', 'Continues', 'IsDescribedBy',
            'Describes', 'HasMetadata', 'IsMetadataFor','HasVersion',  'IsVersionOf', 'IsNewVersionOf', 'IsPreviousVersionOf',
            'IsPartOf', 'HasPart', 'IsPublishedIn', 'IsReferencedBy', 'References', 'IsDocumentedBy', 'Documents', 'IsCompiledBy',

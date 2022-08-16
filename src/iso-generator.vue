@@ -53,6 +53,7 @@ export default {
         progress: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode',
         maintenance: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode',
         keywordType: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode',
+        restriction: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode',
         spatialRepresentation: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode',
         link: 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_OnLineFunctionCode'
       }
@@ -149,6 +150,81 @@ export default {
       var node = this.xmlDoc.createElement(elt)
       node.appendChild(this.createNode('gco:Decimal', value))
       return node
+    },
+    appendConstraintsTo (node) {
+      if (this.metadata.condition.access) {
+        if (this.metadata.condition.access === 'unknown') {
+          var others = {
+              fr: 'Aucune restriction d\'accès connue',
+              en: 'No known access restriction'
+          }
+          console.log('condition accès inconnu')
+          var link = null
+        } else {
+          var others = {
+              fr: 'Pas de restriction d’accès',
+              en: 'No limitations on public access'
+          }
+          var link = 'http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/noLimitations'
+        }
+        node.appendChild(this.createConstraint('access', 'otherRestrictions', others, link ))
+      }
+      if (this.metadata.condition.use) {
+        if (this.metadata.condition.access === 'unknown') {
+          var others = {
+              fr: 'Conditions inconnues',
+              en: 'Conditions unknown'
+          }
+          var link = 'http://inspire.ec.europa.eu/metadata-codelist/ConditionsApplyingToAccessAndUse/conditionsUnknown'
+        } else {
+          var others = {
+              fr: 'Aucune condition ne s’applique',
+              en: 'No conditions apply to access and use'
+          }
+          var link = 'http://inspire.ec.europa.eu/metadata-codelist/ConditionsApplyingToAccessAndUse/noConditionsApply'
+        }
+        node.appendChild(this.createConstraint('use', 'otherRestrictions', others, link ))
+      }
+      if (this.metadata.rights.license) {
+        var others = 'license: ' + this.metadata.rights.license.name
+        others += this.metadata.rights.license.identifier ? ' | ' + this.metadata.rights.license.identifier : ''
+        others += this.metadata.rights.license.uri ? ' (' + this.metadata.rights.license.uri + ')' : ''
+        node.appendChild(this.createConstraint('use', 'license', others, null))
+      }
+      if (this.metadata.rights.howToCite && this.metadata.rights.howToCite.title[this.metadata.mainLang]) {
+        node.appendChild(this.createConstraint('use', 'otherRestrictions', this.metadata.rights.howToCite.title, null))
+      }
+      var self = this
+      this.metadata.rights.others.forEach(function (right) {
+        if (right.title[self.metadata.mainLang]) {
+          var others = Object.assign({}, right.title)
+          for (var lang in right.url) {
+            if (right.url[lang]) {
+              others[lang] += ' (' + right.url[lang] + ')'
+            }
+          }
+          node.appendChild(self.createConstraint(right.type, 'otherRestrictions', others, null))
+        }
+      })
+    },
+    createConstraint(type, restrictionCode, other, link) {
+      var constraints = this.xmlDoc.createElement('gmd:resourceConstraints')
+      var legal = this.xmlDoc.createElement('gmd:MD_LegalConstraints')
+      constraints.appendChild(legal)
+      if (type === 'both') {
+        var types = ['access', 'use']
+      } else {
+        var types = [type]
+      }
+      var self = this
+      types.forEach(function (tp) {
+        var typeConstraint = self.xmlDoc.createElement('gmd:' + tp + 'Constraints')
+        legal.appendChild(typeConstraint)
+        typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', restrictionCode))
+      })
+      var other = this.createIncludeString('gmd:otherConstrains', other, link, this.metadata.mainLang, this.metadata.langs)
+      legal.appendChild(other)
+      return constraints
     },
     appendKeywordsTo (node) {
       // re order keywords by thesaurus and group
@@ -385,14 +461,14 @@ export default {
         data.appendChild(contact)
       }
       this.metadata.creators.forEach(function (creator) {
-        if (creator.fullName && creator.role !== 'distributor') {
+        if (creator.fullName) {
           var contact = self.xmlDoc.createElement('gmd:pointOfContact')
           contact.appendChild(self.createContact(creator))
           data.appendChild(contact)
-        }
+         }
       })
        this.metadata.contributors.forEach(function (contributor) {
-        if (contributor.fullName && contributor.role !== 'distributor') {
+        if (contributor.fullName) {
           var contact = self.xmlDoc.createElement('gmd:pointOfContact')
           contact.appendChild(self.createContact(contributor))
           data.appendChild(contact)
@@ -414,6 +490,7 @@ export default {
       this.appendKeywordsTo(data)
       
       // constraints
+      this.appendConstraintsTo(data)
       
       // spatial representation type
       var sp = this.xmlDoc.createElement('gmd:spatialRepresentationType')
@@ -479,21 +556,21 @@ export default {
           distributors.push(contributor)
         }
       })
-      console.log(distributors)
-      if (distributors.length > 0) {
-        distributors.forEach(function (distributor) {
-          if (distributor.fullName) {
-           var distrib = self.xmlDoc.createElement('gmd:distributor')
-           var mdDistributor = self.xmlDoc.createElement('gmd:MD_Distributor')
-           distrib.appendChild(mdDistributor)
-           var contact = self.xmlDoc.createElement('gmd:distributorContact')
-           contact.appendChild(self.createContact(distributor))
-           mdDistributor.appendChild(contact)
-           mdDistrib.appendChild(mdDistributor)
-           add = true
-          }
-        })
-      }
+//       console.log(distributors)
+//       if (distributors.length > 0) {
+//         distributors.forEach(function (distributor) {
+//           if (distributor.fullName) {
+//            var distrib = self.xmlDoc.createElement('gmd:distributor')
+//            var mdDistributor = self.xmlDoc.createElement('gmd:MD_Distributor')
+//            distrib.appendChild(mdDistributor)
+//            var contact = self.xmlDoc.createElement('gmd:distributorContact')
+//            contact.appendChild(self.createContact(distributor))
+//            mdDistributor.appendChild(contact)
+//            mdDistrib.appendChild(mdDistributor)
+//            add = true
+//           }
+//         })
+//       }
       var addLink = false
       var transferOptions = this.xmlDoc.createElement('gmd:transferOptions')
       var mdTransferOptions = this.xmlDoc.createElement('MD_DigitalTransferOptions')
@@ -502,8 +579,7 @@ export default {
         addLink = true
         transferOptions.appendChild(this.createDoi(this.metadata.doi))
       }
-      if (this.metadata.links.length > 0) {
-       
+      if (this.metadata.links.length > 0) { 
        this.metadata.links.forEach(function (link) {
           if (link.url) {
             transferOptions.appendChild(self.createOnLine(link))
@@ -511,6 +587,14 @@ export default {
           }
        })
       }
+      if (this.metadata.services.length > 0) { 
+        this.metadata.services.forEach(function (link) {
+           if (link.url) {
+             transferOptions.appendChild(self.createOnLine(link))
+             addLink = true
+           }
+        })
+       }
       if (addLink) {
         mdDistrib.appendChild(transferOptions)
         add = true
@@ -543,6 +627,12 @@ export default {
       var protocole = link.protocole
       if (link.type){
         protocole = 'WWW:LINK-1.0-http--link'
+        if (link.type === 'download') {
+          protocole = 'WWW:DOWNLOAD-1.0-link--download'
+        } 
+        if (link.type === 'order') {
+          protocole = 'WWW:DOWNLOAD-1.0-link--order'
+        }
         if (link.type === 'DOI') {
           url = 'https://www.doi.org/' + link.url
         }
@@ -552,9 +642,11 @@ export default {
       olResource.appendChild(this.createIncludeString('gmd:protocol', protocole, null, 'en', ['en']))
       olResource.appendChild(this.createIncludeString('gmd:name', link.title, null, this.metadata.mainLang, this.metadata.langs))
       olResource.appendChild(this.createIncludeString('gmd:description', link.description, null, this.metadata.mainLang, this.metadata.langs))
-      var funct = this.xmlDoc.createElement('gmd:function')
-      funct.appendChild(this.createNodeCode('gmd:CI_OnLineFunctionCode', 'link', link.typeiso))
-      olResource.appendChild(funct)
+      if (link.type) {
+        var funct = this.xmlDoc.createElement('gmd:function')
+        funct.appendChild(this.createNodeCode('gmd:CI_OnLineFunctionCode', 'link', link.typeiso))
+        olResource.appendChild(funct)
+      }
       return onLine
     },
     createNodeCode(tag, list, code, value) {

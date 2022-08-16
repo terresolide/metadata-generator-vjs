@@ -81,7 +81,7 @@ export default {
          'OGC:WCS', 'OGC:WCS-1.1.0-http-get-capabilities', 'OGC:WFS', 'OGC:WFS-1.0.0-http-get-capabilities',
          'OGC:WFS-G', 'OGC:WMC', 'OGC:WMS', 'OGC:WMS-1.1.1-http-get-capabilities', 'OGC:WMS-1.3.0-http-get-capabilities',
          'OGC:WMS-1.1.1-http-get-map', 'OGC:WMS-1.3.0-http-get-map', 'OGC:WMTS', 'OGC:SOS-1.0.0-http-get-observation', 
-         'OGC:SOS-1.0.0-http-post-observation', 'Opensearch', 'SensorThing Api']
+         'OGC:SOS-1.0.0-http-post-observation', 'Opensearch', 'SensorThingApi','XYZ-Tile-Service']
     }
   },
   methods: {
