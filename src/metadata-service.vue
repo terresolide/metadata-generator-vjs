@@ -32,7 +32,7 @@
      <div v-for="lang in langs" style="margin-left:72px;">
         <span class="label">{{lang}}</span>
         <input type="text" style="width:400px;" v-model="meta.description[lang]" @change="change"/>
-        <meta-mro value="R"></meta-mro>
+        <meta-mro value="O"></meta-mro>
       </div>
    </div>
  </div>

@@ -4,7 +4,7 @@
  <span v-else class="no-circle"></span>
  <div class="element-content">
   <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
-  <div v-if="type === 'publisher' || type === 'meta'">
+  <div v-if="type === 'publisher'">
     <div >
      <label>Organisation</label>
       <input type="text" v-model="meta.fullName"  style="width:300px;" required />
@@ -19,7 +19,7 @@
       <meta-mro value="R"></meta-mro>
     </div>
   </div>
-  <div v-if="type === 'creator' || type === 'contributor'">
+  <div>
       <div class="datacite" >
         <label>Type</label> 
         <select v-model="meta.nameType" @change="nameTypeChange">

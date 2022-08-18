@@ -73,7 +73,6 @@ export default {
         linkElement.remove()
     },
     createDataCite () {
-      console.log('create')
       // var xmlDoc = new Document()null;
       const parser = new DOMParser();
         this.xmlDoc = parser.parseFromString('<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"></resource>', "text/xml");
@@ -96,7 +95,9 @@ export default {
        
           break
         case 'contributors':
-          this.generateContact('contributor', this.metadata.contributors)
+          var contributors = this.metadata.contributors.filter(c => c.fullName)
+          contributors.push(this.metadata.metaContact)
+          this.generateContact('contributor', contributors)
        
           break
         case 'dates':
@@ -203,6 +204,13 @@ export default {
                 count++
               })
             }
+          }
+          if (this.metadata.inspire) {
+            var subjectList = this.generateSubject(this.metadata.inspire)
+            subjectList.forEach(function (node) {
+              subjects.appendChild(node)
+              count++
+            })
           }
           if (count > 0) {
             this.xmlDoc.documentElement.appendChild(subjects)
@@ -440,11 +448,16 @@ export default {
         if (subject.title[lang]) {
           var node = self.createNode('subject', subject.title[lang])
           node.setAttribute('xml:lang', lang)
-          if (subject.thesaurus && subject.code) {
+          if (subject.thesaurus && (subject.code || subject.uri)) {
             node.setAttribute('subjectScheme', subject.thesaurus.name)
             node.setAttribute('schemeURI', subject.thesaurus.schemeUrl)
-            node.setAttribute('valueURI', subject.thesaurus.valueRoot + subject.code)
-            node.setAttribute('classificationCode', subject.code)
+            if (subject.code) {
+              node.setAttribute('valueURI', subject.thesaurus.valueRoot + subject.code)
+              node.setAttribute('classificationCode', subject.code)
+            } else {
+              node.setAttribute('valueURI', subject.uri)
+            }
+            
           }
           nodes.push(node)
         }

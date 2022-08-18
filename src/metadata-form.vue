@@ -21,6 +21,7 @@
       <div><meta-mro value="M"></meta-mro> Mandatory/obligatoire</div>
       <div><meta-mro value="R"></meta-mro> Recommandé</div>
       <div><meta-mro value="O"></meta-mro> Optionnel</div>
+      <div><meta-mro value="C"></meta-mro> Conditionnel</div>
     </div>
 	  <div style="clear:both;height:0;">
 	  </div>
@@ -136,7 +137,7 @@
        <input type="button" value="Ajouter identifiant" title="ajouter un identifiant" @click="addIdentifier" />
      </div>
    </div>
-   <div class="block-prop iso" >
+   <div class="block-prop" >
    <meta-mro value="M"></meta-mro>
    <label @click="deploy($event)"><i class="fa"></i> Contact pour les métadonnées
    </label>
@@ -152,8 +153,7 @@
      <formater-tooltip  :width="400" description="<b>Datacite</b> distinguent 3 types de contacts: 
      l'éditeur, les créateurs et les contributeurs<br>
      <b>ISO19139</b>: différencie les contacts avec leur rôle, si un contact a plusieurs rôles, saisir autant de fois que nécessaire
-     le contact<br>
-     <i class='fa fa-warning'></i> Les contacts de rôle <em>distributor</em> seront placés dans la section <em>distributionInfo</em>"></formater-tooltip>
+     le contact"></formater-tooltip>
      </label>
      <div class="properties" >
        <div >
@@ -315,6 +315,25 @@
        <metadata-format v-for="format, id in meta.formats" :key="id" :id="id" :format="format" @change="changeFormat"
        @remove="removeFormat"></metadata-format>
        <input type="button" value="Ajouter Format" @click="addFormat" />
+      </div>
+   </div>
+     <div class="block-prop iso">
+     <meta-mro value="C"></meta-mro>
+     <label @click="deploy($event)">
+       <i class="fa"></i> 
+       Theme INSPIRE
+       <formater-tooltip description="Catégorisation GEMET des données spatiales<br>
+       Obligatoire selon les directives INSPIRE.<br>
+       N'est pas adaptée à tous les produits!<br>
+       Si aucune catégorie ne correspond à vos produits, laissez vide">
+     </formater-tooltip>
+     </label>
+     <div class="properties">
+       <select v-model="inspire" @change="updateInspire">
+         <option value="">----</option>
+         <option v-for="theme, id in themes" :value="id">{{theme.title.fr}}</option>
+       </select>
+       
       </div>
    </div>
     <div class="block-prop">
@@ -482,6 +501,7 @@ const MetadataLink = () => import('./metadata-link.vue')
 const MetadataService = () => import('./metadata-service.vue')
 const MetadataResolution = () => import('./metadata-resolution.vue')
 const MetadataRight = () => import('./metadata-right.vue')
+const gemet = () => import('./assets/thesaurus/gemet.1.0.js')
 import MetaMro from './metadata-mro.vue'
 import FormaterTooltip from './formater-tooltip.vue'
 const DrawBbox = () => import('./draw-bbox.vue')
@@ -542,6 +562,9 @@ export default {
         productType: 'Type de produit',
         other: 'Autre'
       },
+      inspire: '',
+      themes: null,
+      gemet: null,
       subjects: {
         discipline: 'Exemples: Géologie, Sismologie, Volcanologie, Tectonique ....',
         featureOfInterest: 'Exemples: Volcan Piton de la Fournaise, Acquifère d\'Ozark, Faille de San Andreas',
@@ -633,6 +656,7 @@ export default {
           Methods: {fr: null, en: null},
           TechnicalInfo: {fr: null, en: null}
         },
+        inspire: null,
         mainLang: 'fr',
         language: 'en',
         charset: 'utf8',
@@ -641,7 +665,7 @@ export default {
         links: [],
         services: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
-        metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', nameType: 'Organizational'},
+        metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', type: 'DataCurator', affiliations:[], nameType: 'Organizational'},
         contributors: [],
         dates: [],
         status: 'onGoing',
@@ -661,6 +685,13 @@ export default {
     initialize () {
 	      this.meta = this.defaultMeta()
 	      this.addCreator()
+	      this.themes = gemet.data
+	      var self = this
+	      gemet()
+        .then(json => {
+            self.themes = json.default.data
+            self.gemet = json.default.thesaurus
+        })
 	      this.change()
     },
     createUuid(){
@@ -1005,7 +1036,6 @@ export default {
         }
       }
       var access = this.meta.rights.others.filter(rg => rg.type === 'access' || rg.type === 'both')
-      console.log(access.length)
       if (access.length > 0) {
         this.accessCondition = true
         this.meta.condition.access = null
@@ -1015,8 +1045,15 @@ export default {
           this.meta.condition.access = 'unknown'
         }
       }
-      console.log('used', this.useCondition)
-      console.log('access', this.accessCondition)
+    },
+    updateInspire () {
+      if (this.inspire !== '') {
+        this.meta.inspire =  this.themes[this.inspire]
+        this.meta.inspire.thesaurus = this.gemet
+      } else {
+        this.meta.inspire = null
+      }
+      this.change()
     }
   }
 }

@@ -157,6 +157,9 @@ export default {
     initialize (langs) {
       if (this.meta.thesaurusId >= 0) {
         this.enabledLangs = langs.filter(value => this.meta.thesaurus.langs.includes(value))
+        if (this.enabledLangs.length === 0) {
+          this.enabledLangs = this.meta.thesaurus.langs.slice(0, 1)
+        }
       } else {
         this.enabledLangs = langs
       }

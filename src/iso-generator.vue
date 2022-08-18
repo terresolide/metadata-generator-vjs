@@ -255,6 +255,7 @@ export default {
         }
       } 
       var self = this
+     
       for (var type in noThesaurus) {
         if (noThesaurus[type].length > 0) {
           var keywords = self.xmlDoc.createElement('gmd:descriptiveKeywords')
@@ -270,46 +271,66 @@ export default {
           node.appendChild(keywords)
         }
       }
+      if (this.metadata.inspire) {
+        node.appendChild(this.createThesaurusKeywords(this.metadata.inspire.thesaurus, [this.metadata.inspire]))
+      }
       for (var tid in thesaurus) {
         if (thesaurus[tid].length > 0) {
           var thisThesaurus = thesaurus[tid][0].thesaurus
-          var lang = this.metadata.mainLang
-          if (thisThesaurus.langs.indexOf(lang) < 0) {
-            lang = thisThesaurus.langs[0]
-          }
-          var keywords = self.xmlDoc.createElement('gmd:descriptiveKeywords')
-          var mdKeywords = self.xmlDoc.createElement('gmd:MD_Keywords')
-          keywords.appendChild(mdKeywords)
-          thesaurus[tid].forEach(function (subject) {
-            mdKeywords.appendChild(self.createIncludeString('gmd:keyword', subject.title, thisThesaurus.valueRoot + subject.code , lang, thisThesaurus.langs))
-            
-          })
-          var ntype = self.xmlDoc.createElement('gmd:type')
-          
-          ntype.appendChild(self.createNodeCode('gmd:MD_KeywordTypeCode', 'keywordType', thisThesaurus.type))
-          mdKeywords.appendChild(ntype)
-          var thes = this.xmlDoc.createElement('gmd:thesaurusName')
-          var ciCitation = this.xmlDoc.createElement('gmd:CI_Citation')
-          ciCitation.appendChild(this.createIncludeString('gmd:title', thisThesaurus.name, thisThesaurus.scheme, lang, thisThesaurus.langs))
-          ciCitation.appendChild(this.createDate(thisThesaurus.date, 'revision'))
-          if (thisThesaurus.gn) {
-            var identifier = this.xmlDoc.createElement('gmd:identifier')
-            var mdId = this.xmlDoc.createElement('gmd:MD_Identifier')
-            identifier.appendChild(mdId)
-            var name = 'external.' + thisThesaurus.type + '.' + thisThesaurus.gn
-            mdId.appendChild(this.createIncludeString(
-                'gmd:code',
-                'geonetwork.thesaurus.' + name,
-                'https://service.poleterresolide.fr/geonetwork/srv/eng/thesaurus.download?ref=' + name,
-                'en',
-                ['en']))
-          }
-          ciCitation.appendChild(identifier)
-          thes.appendChild(ciCitation)
-          mdKeywords.appendChild(thes)
+          var keywords = this.createThesaurusKeywords(thisThesaurus, thesaurus[tid])
           node.appendChild(keywords)
         }
       }
+    },
+    createThesaurusKeywords (thisThesaurus, subjects) {
+      var lang = this.metadata.mainLang
+      var langs = []
+      var self = this
+      this.metadata.langs.forEach(function (lang) {
+        if (thisThesaurus.langs.indexOf(lang) >= 0) {
+          langs.push(lang)
+        }
+      })
+      if (thisThesaurus.langs.indexOf(lang) < 0) {
+        lang = thisThesaurus.langs[0]
+      }
+      if (langs.length === 0) {
+        langs = [lang]
+      }
+      var keywords = this.xmlDoc.createElement('gmd:descriptiveKeywords')
+      var mdKeywords = this.xmlDoc.createElement('gmd:MD_Keywords')
+      keywords.appendChild(mdKeywords)
+      
+      subjects.forEach(function (subject) {
+        var url = subject.uri ? subject.uri : thisThesaurus.valueRoot + subject.code
+        mdKeywords.appendChild(self.createIncludeString('gmd:keyword', subject.title, url , lang, langs))
+        
+      })
+      var ntype = this.xmlDoc.createElement('gmd:type')
+      
+      ntype.appendChild(this.createNodeCode('gmd:MD_KeywordTypeCode', 'keywordType', thisThesaurus.type))
+      mdKeywords.appendChild(ntype)
+      var thes = this.xmlDoc.createElement('gmd:thesaurusName')
+      var ciCitation = this.xmlDoc.createElement('gmd:CI_Citation')
+      ciCitation.appendChild(this.createIncludeString('gmd:title', thisThesaurus.name, thisThesaurus.schemeUrl, lang, langs))
+      ciCitation.appendChild(this.createDate(thisThesaurus.date, 'revision'))
+      if (thisThesaurus.gn) {
+        var identifier = this.xmlDoc.createElement('gmd:identifier')
+        var mdId = this.xmlDoc.createElement('gmd:MD_Identifier')
+        identifier.appendChild(mdId)
+        var name = 'external.' + thisThesaurus.type + '.' + thisThesaurus.gn
+        mdId.appendChild(this.createIncludeString(
+            'gmd:code',
+            'geonetwork.thesaurus.' + name,
+            'https://service.poleterresolide.fr/geonetwork/srv/eng/thesaurus.download?ref=' + name,
+            'en',
+            ['en']))
+        ciCitation.appendChild(identifier)
+      }
+      
+      thes.appendChild(ciCitation)
+      mdKeywords.appendChild(thes)
+      return keywords
     },
     createISO19139 () {
       // var xmlDoc = new Document()null;
