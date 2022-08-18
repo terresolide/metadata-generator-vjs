@@ -222,7 +222,7 @@ export default {
         legal.appendChild(typeConstraint)
         typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', restrictionCode))
       })
-      var other = this.createIncludeString('gmd:otherConstrains', other, link, this.metadata.mainLang, this.metadata.langs)
+      var other = this.createIncludeString('gmd:otherConstraints', other, link, this.metadata.mainLang, this.metadata.langs)
       legal.appendChild(other)
       return constraints
     },
