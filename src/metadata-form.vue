@@ -567,7 +567,7 @@ export default {
       gemet: null,
       subjects: {
         discipline: 'Exemples: Géologie, Sismologie, Volcanologie, Tectonique ....',
-        featureOfInterest: 'Exemples: Volcan Piton de la Fournaise, Acquifère d\'Ozark, Faille de San Andreas',
+        featureOfInterest: 'Exemples: Volcan, Aquifère, Faille, Manteau ...',
         platform: 'Exemples: Station gravimétrique, SENTINEL-1, Réseau GNSS RENAG',
         variable: 'Exemples: Mouvement du sol, Température, Pression, Déformation du sol, Champs magnétique ',
         productType: 'Interférogramme, Modèle Numérique de Surface ...',
@@ -628,6 +628,7 @@ export default {
        handler (newvalue) {
          if (newvalue && newvalue.langs && newvalue.title) {
            this.meta = Object.assign(this.defaultMeta(), newvalue)
+           this.initInspire()
          } else {
            this.meta = this.defaultMeta()
          }
@@ -685,14 +686,26 @@ export default {
     initialize () {
 	      this.meta = this.defaultMeta()
 	      this.addCreator()
-	      this.themes = gemet.data
 	      var self = this
 	      gemet()
         .then(json => {
             self.themes = json.default.data
             self.gemet = json.default.thesaurus
         })
+        this.accessCondition = false
+        this.useCondition = false
+        this.referentielCode = null
+        this.inspire = ''
+        this.bboxId = -1
 	      this.change()
+    },
+    initInspire () {
+      if (!this.meta.inspire) {
+        this.inspire = ''
+      }  else {
+        var index = this.themes.findIndex(th => th.uri === this.meta.inspire.uri) 
+        this.inspire = index >=0 ? index : ''
+      }
     },
     createUuid(){
       var dt = new Date().getTime();

@@ -19,7 +19,7 @@
       <meta-mro value="R"></meta-mro>
     </div>
   </div>
-  <div>
+  <div v-else >
       <div class="datacite" >
         <label>Type</label> 
         <select v-model="meta.nameType" @change="nameTypeChange">
