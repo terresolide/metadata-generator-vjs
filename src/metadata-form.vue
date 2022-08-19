@@ -317,25 +317,6 @@
        <input type="button" value="Ajouter Format" @click="addFormat" />
       </div>
    </div>
-     <div class="block-prop iso">
-     <meta-mro value="C"></meta-mro>
-     <label @click="deploy($event)">
-       <i class="fa"></i> 
-       Theme INSPIRE
-       <formater-tooltip description="Catégorisation GEMET des données spatiales<br>
-       Obligatoire selon les directives INSPIRE.<br>
-       N'est pas adaptée à tous les produits!<br>
-       Si aucune catégorie ne correspond à vos produits, laissez vide">
-     </formater-tooltip>
-     </label>
-     <div class="properties">
-       <select v-model="inspire" @change="updateInspire">
-         <option value="">----</option>
-         <option v-for="theme, id in themes" :value="id">{{theme.title.fr}}</option>
-       </select>
-       
-      </div>
-   </div>
     <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Mot-clé 
@@ -354,6 +335,25 @@
         :langs="meta.langs" @remove="removeKeyword" @change="changeKeyword"></metadata-keyword>
         <input type="button" value="Ajouter Mot-Clé" @click="addKeyword(type)"/>
       </div>
+      </div>
+   </div>
+   <div class="block-prop iso">
+     <meta-mro value="C"></meta-mro>
+     <label @click="deploy($event)">
+       <i class="fa"></i> 
+       Theme INSPIRE
+       <formater-tooltip description="Catégorisation GEMET des données spatiales<br>
+       Obligatoire selon les directives INSPIRE.<br>
+       N'est pas adaptée à tous les produits!<br>
+       Si aucune catégorie ne correspond à vos produits, laissez vide">
+     </formater-tooltip>
+     </label>
+     <div class="properties">
+       <select v-model="inspire" @change="updateInspire">
+         <option value="">----</option>
+         <option v-for="theme, id in themes" :value="id">{{theme.title.fr}}</option>
+       </select>
+       
       </div>
    </div>
    <div class="block-prop iso">
