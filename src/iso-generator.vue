@@ -393,16 +393,21 @@ export default {
       }
        // Reference system info
       // var syst = this.xmlDoc.createContextualFragment()
-      var syst = this.xmlDoc.createElement('gmd:referenceSystemInfo')
-      var ref = this.xmlDoc.createElement('gmd:MD_ReferenceSystem')
-      syst.appendChild(ref)
-      var refIdentifier = this.xmlDoc.createElement('gmd:referenceSystemIdentifier')
-      ref.appendChild(refIdentifier)
-      identifier = this.xmlDoc.createElement('gmd:RS_Identifier')
-      refIdentifier.appendChild(identifier)
-      var code = this.createIncludeString('gmd:code', this.metadata.referentiel.name, this.metadata.referentiel.link, this.metadata.mainLang, this.metadata.langs)
-      identifier.appendChild(code)
-      this.xmlDoc.documentElement.appendChild(syst)
+      this.metadata.referentiels.forEach(function (referentiel) {
+        if (referentiel.name) {
+	        var syst = self.xmlDoc.createElement('gmd:referenceSystemInfo')
+	        var ref = self.xmlDoc.createElement('gmd:MD_ReferenceSystem')
+	        syst.appendChild(ref)
+	        var refIdentifier = self.xmlDoc.createElement('gmd:referenceSystemIdentifier')
+	        ref.appendChild(refIdentifier)
+	        identifier = self.xmlDoc.createElement('gmd:RS_Identifier')
+	        refIdentifier.appendChild(identifier)
+	        var code = self.createIncludeString('gmd:code',referentiel.name, referentiel.link, self.metadata.mainLang,self.metadata.langs)
+	        identifier.appendChild(code)
+	        self.xmlDoc.documentElement.appendChild(syst)
+        }
+      })
+    
 
       this.appendDataIdentification()
       this.appendDistributionInfo()
@@ -514,9 +519,14 @@ export default {
       this.appendConstraintsTo(data)
       
       // spatial representation type
-      var sp = this.xmlDoc.createElement('gmd:spatialRepresentationType')
-      sp.appendChild(this.createNodeCode('gmd:MD_SpatialRepresentationTypeCode', 'spatialRepresentation', this.metadata.representationType))
-      data.appendChild(sp)
+      this.metadata.representations.forEach(function (rep) {
+        if (rep) {
+          var sp = self.xmlDoc.createElement('gmd:spatialRepresentationType')
+          sp.appendChild(self.createNodeCode('gmd:MD_SpatialRepresentationTypeCode', 'spatialRepresentation', rep))
+          data.appendChild(sp)
+        }
+      })
+     
       // spatial resolution
       this.metadata.resolutions.forEach(function (resolution) {
         if (resolution.value) {

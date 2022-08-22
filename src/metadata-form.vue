@@ -136,7 +136,7 @@
      <label  @click="deploy($event)"><i class="fa"></i> DOI, localisateur
      <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
      Pour l'<b>ISO19139</b>, il est interprété comme le lien vers la ressource.<br>
-     (<em>si votre collection n'a pas de DOI, vous devrez renseigner au moins un lien 
+     (<em>si votre collection n'a pas de DOI, vous devez renseigner au moins un lien ou un service
      vers la ressource.</em>)">
      </formater-tooltip>
      </label>
@@ -276,44 +276,31 @@
    <div class="block-prop iso">
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Type de représentation spatiale
-       <formater-tooltip description="Propriété ISO10139, pas toujours adaptée aux données mais obligatoire. Dans le cas des relevés
-        d'une station, choisissez <em>vector</em>"></formater-tooltip>
+       <formater-tooltip description="Propriété ISO10139, pas toujours adaptée aux données mais obligatoire.<br>
+       Dans le cas des relevés d'une station, choisissez <em>vector</em>"></formater-tooltip>
      </label>
      <div class="properties">
-      <select v-model="meta.representationType">
-       <option v-for="rp, id in representationType" :value="id">{{rp}}</option>
-      </select>
+       <metadata-representation v-for="rep, id in meta.representations" :key="id" :id="id" :representation="rep" :erasable="id > 0"
+       @change="changeRepresentation" @remove="removeRepresentation"></metadata-representation>
+       <input type="button" value="Ajouter représentation" @click="addRepresentation" />
      </div>
    </div>
    <div class="block-prop iso">
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Référentiel des coordonnées
-       <formater-tooltip description="Il s'agit du référentiel utilisé pour les produits/données.
+       <formater-tooltip :width="450" description="Il s'agit du référentiel utilisé pour les produits/données accessibles à l'utilisateur.
        <br>Si non pertinent: laissez le WGS 84 (2D) utilisé pour les métadonnées.<br>
-       Une liste de référentiels est proposée, si le référentiel utilisé ne s'y trouve pas, vous devez saisir au moins son nom."></formater-tooltip>
+       Une liste de référentiels est proposée, si le référentiel utilisé ne s'y trouve pas, vous devez saisir au moins son nom.<br>
+       Vous pouvez saisir plusieurs référentiels."></formater-tooltip>
      </label>
      <div class="properties">
-     <div>
-          <span class="label" style="min-width:80px;" title="Rechercher"><i class="fa fa-search"></i>  </span>
-             <select v-model="referentielCode" @change="referentielChange">
-           <option value="">-- Autre --</option>
-           <option v-for="epsg in epsgList" :value="epsg.id">{{epsg.id + ' - ' + epsg.name +  (epsg.comment ? ' - ' + epsg.comment : '')}}</option>
-         </select>
-         <formater-tooltip description="Ce champs n'est utilisé que pour la recherche"></formater-tooltip>
-     </div>
-      <div>
-        <span class="label" style="min-width:80px;">Nom</span>
-         <input v-model="meta.referentiel.name" type="text"  required/>
-       
-      </div>
-      <div>
-         <span class="label" style="min-width:80px;">Url</span>
-         <input v-model="meta.referentiel.link" class="medium" type="url" />
-      </div>
+       <metadata-referentiel v-for="ref, id in meta.referentiels" :key="id" :id="id" :referentiel="ref"
+       :erasable="id > 0" @change="changeReferentiel" @remove="removeReferentiel"></metadata-referentiel>
+       <input type="button" value="Ajouter référentiel" @click="addReferentiel" />
      </div>
    </div>
    <div class="block-prop">
-     <meta-mro value="M"></meta-mro>
+     <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)">
        <i class="fa"></i> 
        Format des ressources
@@ -354,8 +341,8 @@
      <label @click="deploy($event)">
        <i class="fa"></i> 
        Theme INSPIRE
-       <formater-tooltip description="Catégorisation GEMET des données spatiales<br>
-       Obligatoire selon les directives INSPIRE.<br>
+       <formater-tooltip :width="450" description="Catégorisation INSPIRE des données spatiales, sous forme de mot-clé du thésaurus <b>GEMET</b><br>
+       <b> Obligatoire</b> selon les directives INSPIRE.<br>
        N'est pas adaptée à tous les produits!<br>
        Si aucune catégorie ne correspond à vos produits, laissez vide">
      </formater-tooltip>
@@ -545,6 +532,8 @@ const MetadataRight = () => import('./metadata-right.vue')
 const MetadataTopic = () => import('./metadata-topic.vue')
 const gemet = () => import('./assets/thesaurus/gemet.1.0.js')
 import MetaMro from './metadata-mro.vue'
+import MetadataRepresentation from './metadata-representation.vue'
+import MetadataReferentiel from './metadata-referentiel.vue'
 import FormaterTooltip from './formater-tooltip.vue'
 const DrawBbox = () => import('./draw-bbox.vue')
 import moment from 'moment'
@@ -557,6 +546,8 @@ export default {
     MetadataKeyword,
     MetadataLicense,
     MetadataLink,
+    MetadataRepresentation,
+    MetadataReferentiel,
     MetadataResolution,
     MetadataRight,
     MetadataTopic,
@@ -626,14 +617,6 @@ export default {
         required: 'Ressource qui doit être générée ou mise à jour',
         underDevelopment: 'En cours de création'
       },
-      representationType:{
-        vector: 'Donnée vecteur (point, ligne, polygone)', 
-        grid: 'Donnée raster ou matricielle',
-        textTable: 'Fichier texte ou table',
-        tin: 'Réseau de triangle irrégulier (Triangulated Irregular Network)', 
-        stereoModel: 'Modèle stéréoscopique', 
-        video: 'Enregistrement vidéo',
-      },
       maintenance: {
         continual: 'mise à jour en continue',
         daily: 'journalière',
@@ -649,21 +632,7 @@ export default {
       },
       charsets: ['utf7', 'utf8', 'utf16', 'usAscii', 'ucs2', 'ucs4', '8859part1', '8859part2', '8859part3', '8859part4', '8859part5',
         '8859part6', '8859part7', '8859part8', '8859part9', '8859part10', '8859part11', '8859part12', '8859part13', '8859part14',
-        '8859part15', '8859part16', 'jis', 'shiftJIS', 'eucJP', 'ebcdic', 'eucKR', 'big5', 'GB2312'],
-      referentielCode: null,
-      epsgList:  [
-        { id: "2154", name: "RGF93 v1 / Lambert-93", comment: "France"},
-        { id: "27571", name: "NTF (Paris) / Lambert zone I", comment: "Nord France"} ,
-        { id: "27572", name: "NTF (Paris) / Lambert zone II", comment: "Centre France"},
-        { id: "27573", name: "NTF (Paris) / Lambert zone III", comment: "Sud France"},
-        { id: "3035", name: "ETRS89-extended / LAEA Europe", comment:null},
-        { id: "4171", name: "RGF93 v1", comment:"Geodetic"},
-        { id: "9777", name: "RGF93 v2", comment:"Geodetic"},
-        { id: "9069", name: "ETRF2014", comment: "Geodetic"},
-        { id: "4326", name: "WGS 84", comment: "2D"},
-        { id: "4979", name: "WGS 84", comment: "3D"},
-        { id: "7789", name: "ITRF2014", comment: null}
-      ]
+        '8859part15', '8859part16', 'jis', 'shiftJIS', 'eucJP', 'ebcdic', 'eucKR', 'big5', 'GB2312']
     }
   },
   watch: {
@@ -711,15 +680,15 @@ export default {
         services: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
         categories: [],
+        representations: ['grid'],
         metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', type: 'DataCurator', affiliations:[], nameType: 'Organizational'},
         contributors: [],
         dates: [],
         status: 'onGoing',
         geoLocation: [{name: null, west:null, east:null, north:null, south:null}],
         temporalExtent: {start: null, end: null},
-        representationType: 'grid',
         maintenance: 'asNeeded',
-        referentiel: {name: 'WGS 84', link: 'http://www.opengis.net/def/crs/EPSG/0/4326'},
+        referentiels: [{name: 'WGS 84', link: 'http://www.opengis.net/def/crs/EPSG/0/4326'}],
         condition: {
           access: 'unknown',
           use: 'unknown'
@@ -740,7 +709,7 @@ export default {
         })
         this.accessCondition = false
         this.useCondition = false
-        this.referentielCode = null
+      //  this.referentielCode = null
         this.inspire = ''
         this.bboxId = -1
 	      this.change()
@@ -852,6 +821,12 @@ export default {
     addLink () {
       this.meta.links.push({url: null, typeiso: 'information', lang: 'en', title: {fr: null, en: null}, description: {fr: null, en: null}})
     },
+    addReferentiel () {
+      this.meta.referentiels.push({name: null, link: null})
+    },
+    addRepresentation () {
+      this.meta.representations.push('')
+    },
     addResolution () {
       this.meta.resolutions.push({value: null, unit: 'm'})
     },
@@ -925,6 +900,38 @@ export default {
     changePublisher (obj) {
       this.meta.publisher = obj.contact
       this.change()
+    },
+    changeReferentiel (obj) {
+      var exists = []
+      this.meta.referentiels.forEach(function (value, key) {
+        if (key !== obj.id) {
+          exists.push(value)
+        }
+      })
+      var find = exists.find(ref => ref.link === obj.referentiel.link && ref.name === obj.referentiel.name)
+      if (find) {
+        this.removeReferentiel(obj.id)
+      } else {
+        this.meta.referentiels[obj.id] = obj.referentiel
+        this.meta.changement = this.meta.changement + 1
+        this.change()
+      }
+    },
+    changeRepresentation (obj) {
+      // remove duplicate
+      var exists = []
+      this.meta.representations.forEach(function (value, key) {
+        if (key !== obj.id) {
+          exists.push(value)
+        }
+      })
+      if (exists.indexOf(obj.topic) >= 0) {
+        this.removeRepresentation(obj.id)
+      } else {
+        this.meta.representations[obj.id] = obj.representation
+        this.meta.changement = this.meta.changement + 1
+        this.change()
+      }
     },
     changeResolution (obj) {
       this.meta.resolutions[obj.id] = obj.resolution
@@ -1008,17 +1015,7 @@ export default {
         this.meta.langs.unshift(this.meta.mainLang)
       }
     },
-    referentielChange () {
-      if (this.referentielCode) {
-        var find = this.epsgList.find(epsg => epsg.id === this.referentielCode)
-        if (find) {
-          this.meta.referentiel = {
-              name: find.name,
-              link: 'http://www.opengis.net/def/crs/EPSG/0/' + this.referentielCode
-          }
-        }
-      }
-    },
+
 //     readJSON (evt) {
 //       let files = evt.target.files; // FileList object
 
@@ -1081,6 +1078,14 @@ export default {
       this.meta.links.splice(id, 1)
       this.change()
       
+    },
+    removeReferentiel (id) {
+      this.meta.referentiels.splice(id, 1)
+      this.change()
+    },
+    removeRepresentation (id) {
+      this.meta.representations.splice(id, 1)
+      this.change()
     },
     removeResolution (id) {
       this.meta.resolutions.splice(id, 1)

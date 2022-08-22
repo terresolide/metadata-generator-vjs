@@ -61,7 +61,6 @@ export default {
   },
   created () {
     this.meta = this.link
-    this.changeLang()
   },
   watch: {
     link: {
