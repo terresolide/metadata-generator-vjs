@@ -419,6 +419,16 @@ export default {
       }
       return full
     },
+    createGraphicOverview (image) {
+      var node = this.xmlDoc.createElement('gmd:graphicOverview')
+      var mdGraphic = this.xmlDoc.createElement('gmd:MD_BrowseGraphic')
+      node.appendChild(mdGraphic)
+      mdGraphic.appendChild(this.createIncludeString('gmd:fileName', image.url, null, 'en', ['en']))
+      if (image.title[this.metadata.mainLang]) {
+        mdGraphic.appendChild(this.createIncludeString('gmd:fileDescription', image.title, null, this.metadata.mainLang, this.metadata.langs))
+      }
+      return node
+    },
     appendDataIdentification () {
       var self = this
       var node = this.xmlDoc.createElement('gmd:identificationInfo')
@@ -510,6 +520,12 @@ export default {
       data.appendChild(rMain)
       
       // graphic overview
+      this.metadata.images.forEach(function (image) {
+        if (image.url) {
+          var graphic = self.createGraphicOverview(image)
+          data.appendChild(graphic)
+        }
+      })
       
       // keywords
      

@@ -375,6 +375,9 @@
      <label @click="deploy($event)"><i class="fa"></i> Image d'illustration
      </label>
      <div class="properties">
+       <metadata-image v-for="img, id in meta.images" :key="id" :id="id" :image="img" :langs="meta.langs"
+       @change="changeImage" @remove="removeImage"></metadata-image>
+       <input type="button" value="Ajouter image" @click="addImage" /> 
       </div>
    </div>
     <div class="block-prop iso">
@@ -530,6 +533,7 @@ const MetadataService = () => import('./metadata-service.vue')
 const MetadataResolution = () => import('./metadata-resolution.vue')
 const MetadataRight = () => import('./metadata-right.vue')
 const MetadataTopic = () => import('./metadata-topic.vue')
+const MetadataImage = () => import('./metadata-image.vue')
 const gemet = () => import('./assets/thesaurus/gemet.1.0.js')
 import MetaMro from './metadata-mro.vue'
 import MetadataRepresentation from './metadata-representation.vue'
@@ -543,6 +547,7 @@ export default {
     MetadataIdentifier,
     MetadataBbox,
     MetadataFormat,
+    MetadataImage,
     MetadataKeyword,
     MetadataLicense,
     MetadataLink,
@@ -689,6 +694,7 @@ export default {
         temporalExtent: {start: null, end: null},
         maintenance: 'asNeeded',
         referentiels: [{name: 'WGS 84', link: 'http://www.opengis.net/def/crs/EPSG/0/4326'}],
+        images: [],
         condition: {
           access: 'unknown',
           use: 'unknown'
@@ -803,6 +809,9 @@ export default {
     addIdentifier () {
       this.meta.identifiers.push({})
     },
+    addImage () {
+      this.meta.images.push({url: null, title: {fr: null, en: null}})
+    },
     addLicense () {
       this.meta.rights.license = {name: null, uri: null, identifier: null}
       this.updateCondition()
@@ -881,6 +890,10 @@ export default {
     },
     changeHowToCite (obj) {
       this.meta.rights.howToCite = obj.right
+    },
+    changeImage (obj) {
+      this.meta.images[obj.id] = obj.image
+      this.change()
     },
     changeKeyword (obj) {
       this.meta.subjects[obj.type][obj.id] = obj.keyword
@@ -1063,6 +1076,10 @@ export default {
     removeHowToCite (id) {
       this.meta.rights.howToCite = null
       this.updateCondition()
+      this.change()
+    },
+    removeImage (id) {
+      this.meta.images.splice(id, 1)
       this.change()
     },
     removeKeyword (obj) {
