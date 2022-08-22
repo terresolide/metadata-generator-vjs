@@ -1,6 +1,5 @@
 <template>
  <div>
-  
    <div class="header block-button" > 
      <h3 style="margin-top:0;">Formulaire</h3>
      <div class="header-right">
@@ -76,6 +75,22 @@
    </div>
    <div class="block-prop">
      <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Type de ressource</label>
+     <div class="properties datacite">
+       
+       <span class="label"></span>
+       <select disabled>
+         <option value="Collection">Collection / series</option>
+       </select>
+       <input class="datacite" style="width:250px;" v-model="meta.resourceType" type="text" required placeholder="Collection of ...." /> 
+       <meta-mro value="M"></meta-mro>
+       <formater-tooltip description="En anglais uniquement.<br>
+       Il faut juste compléter le <em>Collection of ..</em> par le type de données ou produits en question">
+       </formater-tooltip>
+     </div>
+   </div>
+   <div class="block-prop">
+     <meta-mro value="M"></meta-mro>
      <label  @click="deploy($event)"><i class="fa"></i> Titre
      <formater-tooltip description="Titre lisible par un être humain. 
      Si possible sans acronyme, avec localisation et dates si pertinent....<br>
@@ -88,22 +103,6 @@
          <meta-mro value="M"></meta-mro>
        </div>
      </div>
-   </div>
-   <div class="block-prop">
-     <meta-mro value="M"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Type de ressource</label>
-     <div class="properties datacite">
-       
-       <span class="label"></span>
-		   <select disabled>
-		     <option value="Collection">Collection / series</option>
-		   </select>
-		   <input class="datacite" style="width:250px;" v-model="meta.resourceType" type="text" required placeholder="Collection of ...." /> 
-		   <meta-mro value="M"></meta-mro>
-		   <formater-tooltip description="En anglais uniquement.<br>
-		   Il faut juste compléter le <em>Collection of ..</em> par le type de données ou produits en question">
-		   </formater-tooltip>
-	   </div>
    </div>
    <div class="block-prop">
      <meta-mro value="M"></meta-mro>
@@ -120,22 +119,35 @@
     <div class="block-prop" >
     <meta-mro value="M"></meta-mro>
      <label  @click="deploy($event)"><i class="fa"></i> Identifiant de la collection
-     <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
+     <formater-tooltip description="Pour <b>Datacite</b>, il est optionnel.<br>
      Pour l'<b>ISO19139</b>, au moins un identifiant <b>unique</b>, autre que le DOI,  quel qu'il soit, est attendu">
      </formater-tooltip>
      </label>
      <div class="properties">
-       <div class="datacite">
-         <span class="label" style="display:block;">DOI</span>
-         <input type="text" class="large" v-model="meta.doi" required @change="propertyChange($event)"/>
-         <meta-mro value="M"></meta-mro>
-       </div>
        <div v-for="identifier, id in meta.identifiers">
           <metadata-identifier :id="id" :identifier="identifier"
           :erasable="meta.identifiers.length > 1" @remove="removeIdentifier" @change="changeIdentifier"></metadata-identifier>
        </div>
        <input type="button" value="Ajouter identifiant" title="ajouter un identifiant" @click="addIdentifier" />
      </div>
+   </div>
+    <div class="block-prop" >
+    <meta-mro value="M"></meta-mro>
+     <label  @click="deploy($event)"><i class="fa"></i> DOI, localisateur
+     <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
+     Pour l'<b>ISO19139</b>, il est interprété comme le lien vers la ressource.<br>
+     (<em>si votre collection n'a pas de DOI, vous devrez renseigner au moins un lien 
+     vers la ressource.</em>)">
+     </formater-tooltip>
+     </label>
+     <div class="properties">
+       <div >
+         <span class="label" style="display:block;">DOI</span>
+         <input type="text" class="large" v-model="meta.doi" required @change="propertyChange($event)"/>
+         <span class="datacite"><meta-mro value="M"></meta-mro></span>
+         <span class="iso"><meta-mro value="O"></meta-mro></span>
+       </div>
+      </div>
    </div>
    <div class="block-prop" >
    <meta-mro value="M"></meta-mro>
@@ -337,7 +349,7 @@
       </div>
       </div>
    </div>
-   <div class="block-prop iso">
+   <div class="block-prop">
      <meta-mro value="C"></meta-mro>
      <label @click="deploy($event)">
        <i class="fa"></i> 
@@ -356,6 +368,21 @@
        
       </div>
    </div>
+    <div class="block-prop iso">
+     <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)">
+       <i class="fa"></i> 
+       Catégorie thématique
+       <formater-tooltip description="Catégorisation thématique ISO19139 haut niveau">
+     </formater-tooltip>
+     </label>
+     <div class="properties">
+       <metadata-topic v-for="value, id in meta.categories" :topic="value" :id="id" :key="id"
+       :erasable="id > 0" @change="changeTopic" @remove="removeTopic"></metadata-topic>
+        <input type="button" value="Ajouter catégorie" @click="addTopic('')"/>
+      
+      </div>
+   </div>
    <div class="block-prop iso">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Image d'illustration
@@ -363,12 +390,17 @@
      <div class="properties">
       </div>
    </div>
-    <div class="block-prop">
-     <meta-mro value="R"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Lien
-     <formater-tooltip :width="450" description="ForM@Ter mélangent des champs différents de <b>Datacite</b> et <b>ISO19139</b> 
-     <ul><li><b>Datacite</b>: page web ou dataset ou collection en lien avec la collection</li>
-     <li><b>ISO19139</b>: lien d'accès, de téléchargement, de recherche...</li></ul>"></formater-tooltip>
+    <div class="block-prop iso">
+     <meta-mro value="C"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Lien vers la ressource
+     <formater-tooltip :width="450" description="Il s'agit de lien permettant d'accéder à la ressource: lien de téléchargement, interface de recherche,
+      page d'information pour accéder à la ressource ...<br><br>
+      Vous devez renseigner au moins un des éléments suivants: 
+     <ul><li>le DOI</li>
+     <li>ou un lien vers la ressource</li>
+     <li>ou un service associé à la ressource</li>
+     </ul>
+     <br>"></formater-tooltip>
      
      
      </label>
@@ -380,7 +412,7 @@
       </div>
    </div>
     <div class="block-prop iso">
-     <meta-mro value="O"></meta-mro>
+     <meta-mro value="C"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Service
      <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour ForM@Ter et 
      le protocole n'est pas toujours bien entré par les responsables!
@@ -485,6 +517,15 @@
        <input type="button" value="Ajouter Résolution" @click="addResolution" />
       </div>
    </div>
+    <div class="block-prop">
+     <meta-mro value="O"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Lien vers d'autres ressources
+     <formater-tooltip :width="450" description="@todo"></formater-tooltip>
+     </label>
+     <div class="properties">
+        @todo
+      </div>
+   </div>
     <draw-bbox v-if="bboxId >= 0" :bboxes="meta.geoLocation" :id="bboxId" 
     @close="bboxId = -1" @change="changeBbox" @changeId="changeBboxId"></draw-bbox>
  </div>
@@ -501,6 +542,7 @@ const MetadataLink = () => import('./metadata-link.vue')
 const MetadataService = () => import('./metadata-service.vue')
 const MetadataResolution = () => import('./metadata-resolution.vue')
 const MetadataRight = () => import('./metadata-right.vue')
+const MetadataTopic = () => import('./metadata-topic.vue')
 const gemet = () => import('./assets/thesaurus/gemet.1.0.js')
 import MetaMro from './metadata-mro.vue'
 import FormaterTooltip from './formater-tooltip.vue'
@@ -517,6 +559,7 @@ export default {
     MetadataLink,
     MetadataResolution,
     MetadataRight,
+    MetadataTopic,
     MetadataService,
     MetadataContact,
     MetadataDate,
@@ -643,6 +686,7 @@ export default {
   methods: {
     defaultMeta () {
       return {
+        changement: 0,
         uuid: this.createUuid(),
         langs: ['fr', 'en'],
         doi: null,
@@ -666,6 +710,7 @@ export default {
         links: [],
         services: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
+        categories: [],
         metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', type: 'DataCurator', affiliations:[], nameType: 'Organizational'},
         contributors: [],
         dates: [],
@@ -686,6 +731,7 @@ export default {
     initialize () {
 	      this.meta = this.defaultMeta()
 	      this.addCreator()
+	      this.addTopic('geoscientificInformation')
 	      var self = this
 	      gemet()
         .then(json => {
@@ -740,6 +786,7 @@ export default {
       }
       this.change()
     },
+   
     addContributor () {
       this.meta.contributors.push({
         fullName: '',
@@ -803,7 +850,7 @@ export default {
       this.meta.subjects[type].push({title:{fr: null, en: null}, type: this.keywordType(type), thesaurus: null, thesaurusId: -1, code: null})
     },
     addLink () {
-      this.meta.links.push({url: null, relation: 'IsDocumentedBy', type: 'URL', typeiso: 'information', lang: 'en', title: {fr: null, en: null}, description: {fr: null, en: null}})
+      this.meta.links.push({url: null, typeiso: 'information', lang: 'en', title: {fr: null, en: null}, description: {fr: null, en: null}})
     },
     addResolution () {
       this.meta.resolutions.push({value: null, unit: 'm'})
@@ -814,6 +861,9 @@ export default {
     },
     addService () {
       this.meta.services.push({url: null, protocole: 'OGC:WMS', title: {fr: null, en: null}, description: {fr: null, en: null}})
+    },
+    addTopic (value) {
+      this.meta.categories.push(value)
     },
     change () {
       this.$emit('change', this.meta)
@@ -894,6 +944,22 @@ export default {
     changeService(obj) {
       this.meta.services[obj.id] = obj.service
       this.change()
+    },
+    changeTopic (obj) {
+      // remove duplicate
+      var exists = []
+      this.meta.categories.forEach(function (value, key) {
+        if (key !== obj.id) {
+          exists.push(value)
+        }
+      })
+      if (exists.indexOf(obj.topic) >= 0) {
+        this.removeTopic(obj.id)
+      } else {
+        this.meta.categories[obj.id] = obj.topic
+        this.meta.changement = this.meta.changement + 1
+        this.change()
+      }
     },
 //     exportJSON () {
 //         let dataStr = JSON.stringify(this.meta);
@@ -1029,6 +1095,10 @@ export default {
       this.meta.services.splice(id, 1)
       this.change()
       
+    },
+    removeTopic (id) {
+      this.meta.categories.splice(id, 1)
+      this.change()
     },
     updateCondition () {
       var used = this.meta.rights.others.filter(rg => rg.type === 'use' || rg.type === 'both')

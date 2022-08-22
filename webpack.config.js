@@ -10,7 +10,7 @@ function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
 var pathsToClean = [
-  'dist/*.*'
+  'dists'
 ]
 
 module.exports = {
@@ -105,7 +105,7 @@ if (process.env.NODE_ENV === 'production') {
         NODE_ENV: '"production"'
       }
     }),
-    new CleanWebpackPlugin({cleanOnceBeforeBuildPatterns:pathsToClean}),
+    new CleanWebpackPlugin({cleanAfterEveryBuildPatterns: pathsToClean}),
   
     new webpack.LoaderOptionsPlugin({
       minimize: true

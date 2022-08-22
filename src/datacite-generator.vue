@@ -232,7 +232,7 @@ export default {
             this.xmlDoc.documentElement.appendChild(node)
           }
           break
-          case 'links':
+          case 'related':
             var rootId = this.xmlDoc.createElement('relatedIdentifiers')
             var rootItem = this.xmlDoc.createElement('relatedItems')
             var addId = false

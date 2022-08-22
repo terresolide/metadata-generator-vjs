@@ -544,9 +544,14 @@ export default {
       data.appendChild(charset)
       
       // topic category
-      var topic = this.xmlDoc.createElement('gmd:topicCategory')
-      topic.appendChild(this.createNode('gmd:MD_TopicCategoryCode', 'geoscientificInformation'))
-      data.appendChild(topic)
+      this.metadata.categories.forEach(function (cat) {
+        if (cat) {
+          var topic = self.xmlDoc.createElement('gmd:topicCategory')
+          topic.appendChild(self.createNode('gmd:MD_TopicCategoryCode', cat))
+          data.appendChild(topic)
+        }
+      })
+     
       
       // extent
       this.appendExtentTo(data)
@@ -598,12 +603,12 @@ export default {
       transferOptions.appendChild(mdTransferOptions)
       if (this.metadata.doi) {
         addLink = true
-        transferOptions.appendChild(this.createDoi(this.metadata.doi))
+        mdTransferOptions.appendChild(this.createDoi(this.metadata.doi))
       }
       if (this.metadata.links.length > 0) { 
        this.metadata.links.forEach(function (link) {
           if (link.url) {
-            transferOptions.appendChild(self.createOnLine(link))
+            mdTransferOptions.appendChild(self.createOnLine(link))
             addLink = true
           }
        })
@@ -611,7 +616,7 @@ export default {
       if (this.metadata.services.length > 0) { 
         this.metadata.services.forEach(function (link) {
            if (link.url) {
-             transferOptions.appendChild(self.createOnLine(link))
+             mdTransferOptions.appendChild(self.createOnLine(link))
              addLink = true
            }
         })
@@ -625,7 +630,6 @@ export default {
       }
 
     },
-    
     createDoi (doi) {
       var link = {
           type: 'DOI',

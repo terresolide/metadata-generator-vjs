@@ -4,16 +4,39 @@
  <div class="element-content">
    <div style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
    <div >
-     <label>Url</label> 
-     <input style="width:425px;" type="url" required v-model="meta.url" @change="change"/>
-     <meta-mro value="M"></meta-mro>
+     <label>Type</label>
+     <select v-model="meta.type">
+       <option value="DOI">DOI</option>
+       <option value="URL">URL</option>
+     </select>
    </div>
    <div >
-     <label>Type</label>
+     <label>{{meta.type === 'DOI' ? 'DOI' : 'URL'}}</label> 
+     <input style="width:425px;" :type="meta.type === 'DOI' ? 'text' : 'url'" required v-model="meta.url" @change="change"/>
+     <meta-mro value="M"></meta-mro>
+   </div>
+   <div class="iso">
+     <label>Type ISO</label>
      <select v-model="meta.typeiso">
        <option v-for="tp in types" :value="tp">{{tp}}</option>
      </select> 
      <meta-mro value="M"></meta-mro>
+   </div>
+   <div class="datacite">
+     <label>Relation</label>
+   La collection 
+   <select v-model="meta.relation">
+     <option value="">---</option>
+     <option v-for="relation in relations" :value="relation">{{relation}}</option>
+   </select> ce lien
+   <meta-mro value="M"></meta-mro>
+   </div>
+   <div>
+     <label style="width:auto;max-width:none;">Langue principale du lien</label>
+     <select v-model="link.lang" @change="changeLang">
+       <option value="fr">fr</option>
+       <option value="en">en</option>
+     </select>
    </div>
    <div>
      <label style="vertical-align:top;">Titre</label>
@@ -41,7 +64,7 @@
 <script>
 import MetaMro from './metadata-mro.vue'
 export default {
-  name: 'MetadataLink',
+  name: 'MetadataRelated',
   components: {
     MetaMro
   },
@@ -69,6 +92,9 @@ export default {
         this.meta = newvalue
       },
       deep: true
+    },
+    langs (newvalue) {
+      this.changeLang()
     }
   },
   data () {
@@ -83,13 +109,24 @@ export default {
         description: {fr: null, en: null}
       },
       languages: ['en', 'fr'],
-      types: ['information', 'search', 'download', 'order', 'offlineAccess']
+      types: ['information', 'search', 'download', 'order', 'offlineAccess'],
+      relations:['IsCitedBy','Cites', 'IsSupplementTo','IsSupplementedBy', 'IsContinuedBy', 'Continues', 'IsDescribedBy',
+           'Describes', 'HasMetadata', 'IsMetadataFor','HasVersion',  'IsVersionOf', 'IsNewVersionOf', 'IsPreviousVersionOf',
+           'IsPartOf', 'HasPart', 'IsPublishedIn', 'IsReferencedBy', 'References', 'IsDocumentedBy', 'Documents', 'IsCompiledBy',
+           'Compiles', 'IsVariantFormOf', 'IsOriginalFormOf', 'IsIdenticalTo', 'IsReviewedBy', 'Reviews', 'IsDerivedFrom',
+           'IsSourceOf', 'IsRequiredBy', 'Requires', 'IsObsoletedBy', 'obsoletes']
     }
   },
   methods: {
     change () {
       console.log(this.meta)
       this.$emit('change', {id: this.id, link: this.meta})
+    },
+    changeLang () {
+      this.languages = [...this.langs]
+      if (this.languages.indexOf(this.meta.lang) < 0) {
+        this.languages.unshift(this.meta.lang)
+      }
     },
     remove () {
       this.$emit('remove', this.id)
