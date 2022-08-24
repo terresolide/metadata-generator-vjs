@@ -6,8 +6,7 @@
 	     <div style="margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 
 	     vous pouvez exporter les métadonnées au format JSON et les ré-importer quand vous le souhaitez.</em>
 	     </div>
-	     <div><a href="../assets/doc/datacite-vs-iso19139.pdf" target="_blank">documentation</a></div>
-		   <div>
+	     <div>
 		       <div style="text-align:right;margin-left:5px;display:inline-block;min-width:350px;">
 		       Exporter les métadonnées dans le format JSON
 		       </div>

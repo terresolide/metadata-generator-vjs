@@ -117,7 +117,7 @@
      </div>
    </div>
     <div class="block-prop" >
-    <meta-mro value="M"></meta-mro>
+    <div class="iso" style="float:right;margin: -3px 3px 0 0;"><meta-mro value="M"></meta-mro></div>
      <label  @click="deploy($event)"><i class="fa"></i> Identifiant de la collection
      <formater-tooltip description="Pour <b>Datacite</b>, il est optionnel.<br>
      Pour l'<b>ISO19139</b>, au moins un identifiant <b>unique</b>, autre que le DOI,  quel qu'il soit, est attendu">
@@ -132,7 +132,7 @@
      </div>
    </div>
     <div class="block-prop" >
-    <meta-mro value="M"></meta-mro>
+    <div class="datacite" style="float:right;margin: -3px 3px 0 0;"><meta-mro value="M"></meta-mro></div>
      <label  @click="deploy($event)"><i class="fa"></i> DOI, localisateur
      <formater-tooltip description="Pour <b>Datacite</b>, le DOI est obligatoire.<br>
      Pour l'<b>ISO19139</b>, il est interprété comme le lien vers la ressource.<br>
@@ -219,28 +219,7 @@
        </div>
      </div>
    </div>
-    <div class="block-prop iso">
-      <meta-mro value="M"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Status de la collection
-    
-     </label>
-     <div class="properties">
-      <select v-model="meta.status">
-       <option v-for="st, id in status" :value="id">{{st}}</option>
-      </select>
-     </div>
-   </div>
-     <div class="block-prop iso">
-      <meta-mro value="M"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Fréquence de maintenance des données
-    
-     </label>
-     <div class="properties">
-      <select v-model="meta.maintenance">
-       <option v-for="st, id in maintenance" :value="id">{{st}}</option>
-      </select>
-     </div>
-   </div>
+   
    <div class="block-prop">
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Etendue spatiale 
@@ -273,6 +252,73 @@
        </div>
      </div>
    </div>
+       <div class="block-prop iso">
+     <meta-mro value="C"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Lien vers la ressource
+     <formater-tooltip :width="450" description="Il s'agit de lien permettant d'accéder à la ressource: lien de téléchargement, interface de recherche,
+      page d'information pour accéder à la ressource ...<br><br>
+      Vous devez renseigner au moins un des éléments suivants: 
+     <ul><li>le DOI</li>
+     <li>ou un lien vers la ressource</li>
+     <li>ou un service associé à la ressource</li>
+     </ul>
+     <br>"></formater-tooltip>
+     
+     
+     </label>
+     <div class="properties">
+      <div v-for="link, id in meta.links">
+        <metadata-link :link="link" :id="id" :langs="meta.langs" @change="changeLink" @remove="removeLink"></metadata-link>
+      </div>
+      <input type="button" value="Ajouter lien" @click="addLink"/> 
+      <div style="font-size:0.8rem;">(<em>Autre que page du DOI</em>)</div>
+      </div>
+   </div>
+    <div class="block-prop iso">
+     <meta-mro value="C"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Service
+     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour ForM@Ter et 
+     le protocole n'est pas toujours bien entré par les responsables!
+     Pour le moment, nous sommes en capacité d'utiliser les services pour les protocoles:
+     <ul>
+       <li>WFS</li>
+       <li>WMS: OGC:WMS, OGC:WMS-1.1.1-http-get-capabilities ...</li>
+       <li>WMTS</li>
+       <li>XYZ-Tile-Service</li>
+       <li>OpenSearch</li>
+     </ul>"></formater-tooltip>
+     
+     
+     </label>
+     <div class="properties">
+      <div v-for="service, id in meta.services">
+        <metadata-service :service="service" :id="id" :langs="meta.langs" @change="changeService" @remove="removeService"></metadata-service>
+      </div>
+      <input type="button" value="Ajouter service" @click="addService"/>
+      </div>
+   </div>
+    <div class="block-prop iso">
+      <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Status de la collection
+    
+     </label>
+     <div class="properties">
+      <select v-model="meta.status">
+       <option v-for="st, id in status" :value="id">{{st}}</option>
+      </select>
+     </div>
+   </div>
+     <div class="block-prop iso">
+      <meta-mro value="M"></meta-mro>
+     <label @click="deploy($event)"><i class="fa"></i> Fréquence de maintenance des données
+    
+     </label>
+     <div class="properties">
+      <select v-model="meta.maintenance">
+       <option v-for="st, id in maintenance" :value="id">{{st}}</option>
+      </select>
+     </div>
+   </div>
    <div class="block-prop iso">
      <meta-mro value="M"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Type de représentation spatiale
@@ -299,23 +345,7 @@
        <input type="button" value="Ajouter référentiel" @click="addReferentiel" />
      </div>
    </div>
-   <div class="block-prop">
-     <meta-mro value="R"></meta-mro>
-     <label @click="deploy($event)">
-       <i class="fa"></i> 
-       Format des ressources
-       <formater-tooltip description="Indiquez l'extension des fichiers de données ou son type MIME.<br>
-     <b>Exemples</b>: <em>tif, txt, xml, pdf, png</em> ou encore <em>image/tif, application/xml....</em> ">
-     </formater-tooltip>
-     </label>
-   
-     
-     <div class="properties">
-       <metadata-format v-for="format, id in meta.formats" :key="id" :id="id" :format="format" @change="changeFormat"
-       @remove="removeFormat"></metadata-format>
-       <input type="button" value="Ajouter Format" @click="addFormat" />
-      </div>
-   </div>
+
     <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Mot-clé 
@@ -380,50 +410,7 @@
        <input type="button" value="Ajouter image" @click="addImage" /> 
       </div>
    </div>
-    <div class="block-prop iso">
-     <meta-mro value="C"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Lien vers la ressource
-     <formater-tooltip :width="450" description="Il s'agit de lien permettant d'accéder à la ressource: lien de téléchargement, interface de recherche,
-      page d'information pour accéder à la ressource ...<br><br>
-      Vous devez renseigner au moins un des éléments suivants: 
-     <ul><li>le DOI</li>
-     <li>ou un lien vers la ressource</li>
-     <li>ou un service associé à la ressource</li>
-     </ul>
-     <br>"></formater-tooltip>
-     
-     
-     </label>
-     <div class="properties">
-      <div v-for="link, id in meta.links">
-        <metadata-link :link="link" :id="id" :langs="meta.langs" @change="changeLink" @remove="removeLink"></metadata-link>
-      </div>
-      <input type="button" value="Ajouter lien" @click="addLink"/>
-      </div>
-   </div>
-    <div class="block-prop iso">
-     <meta-mro value="C"></meta-mro>
-     <label @click="deploy($event)"><i class="fa"></i> Service
-     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour ForM@Ter et 
-     le protocole n'est pas toujours bien entré par les responsables!
-     Pour le moment, nous sommes en capacité d'utiliser les services pour les protocoles:
-     <ul>
-       <li>WFS</li>
-	     <li>WMS: OGC:WMS, OGC:WMS-1.1.1-http-get-capabilities ...</li>
-	     <li>WMTS</li>
-	     <li>XYZ-Tile-Service</li>
-	     <li>OpenSearch</li>
-     </ul>"></formater-tooltip>
-     
-     
-     </label>
-     <div class="properties">
-      <div v-for="service, id in meta.services">
-        <metadata-service :service="service" :id="id" :langs="meta.langs" @change="changeService" @remove="removeService"></metadata-service>
-      </div>
-      <input type="button" value="Ajouter service" @click="addService"/>
-      </div>
-   </div>
+
    <div class="block-prop">
      <meta-mro value="R"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Généalogie 
@@ -496,6 +483,23 @@
           <input type="button" value="Ajouter condition" @click="addRight" />
         </div>
      </div>
+   </div>
+      <div class="block-prop">
+     <meta-mro value="R"></meta-mro>
+     <label @click="deploy($event)">
+       <i class="fa"></i> 
+       Format des ressources
+       <formater-tooltip description="Indiquez l'extension des fichiers de données ou son type MIME.<br>
+     <b>Exemples</b>: <em>tif, txt, xml, pdf, png</em> ou encore <em>image/tif, application/xml....</em> ">
+     </formater-tooltip>
+     </label>
+   
+     
+     <div class="properties">
+       <metadata-format v-for="format, id in meta.formats" :key="id" :id="id" :format="format" @change="changeFormat"
+       @remove="removeFormat"></metadata-format>
+       <input type="button" value="Ajouter Format" @click="addFormat" />
+      </div>
    </div>
     <div class="block-prop iso">
       <meta-mro value="R"></meta-mro>
@@ -828,7 +832,7 @@ export default {
       this.meta.subjects[type].push({title:{fr: null, en: null}, type: this.keywordType(type), thesaurus: null, thesaurusId: -1, code: null})
     },
     addLink () {
-      this.meta.links.push({url: null, typeiso: 'information', lang: 'en', title: {fr: null, en: null}, description: {fr: null, en: null}})
+      this.meta.links.push({url: null, type: 'URL', funct: 'information', protocole: 'WWW:LINK-1.0-http--link', title: {fr: null, en: null}, description: {fr: null, en: null}})
     },
     addReferentiel () {
       this.meta.referentiels.push({name: null, link: null})

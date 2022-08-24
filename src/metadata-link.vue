@@ -9,9 +9,16 @@
      <meta-mro value="M"></meta-mro>
    </div>
    <div >
-     <label>Type</label>
-     <select v-model="meta.typeiso">
-       <option v-for="tp in types" :value="tp">{{tp}}</option>
+     <label>Fonction</label>
+     <select v-model="meta.funct">
+       <option v-for="tp in functions" :value="tp">{{tp}}</option>
+     </select> 
+     <meta-mro value="M"></meta-mro>
+   </div>
+    <div >
+     <label>Protocole</label>
+     <select v-model="meta.protocole">
+       <option v-for="name, pt in protocoles" :value="pt">{{name}}</option>
      </select> 
      <meta-mro value="M"></meta-mro>
    </div>
@@ -19,7 +26,7 @@
      <label style="vertical-align:top;">Titre</label>
     
      <div style="display:inline-block;" >
-	     <div v-for="lang in languages">
+	     <div v-for="lang in langs">
 		      <span class="label">{{lang}}</span>
 		      <input type="text" required style="width:400px;" v-model="meta.title[lang]" @change="change"/>
 		      <span class="iso"><meta-mro value="M"></meta-mro></span>
@@ -73,16 +80,18 @@ export default {
   data () {
     return {
       meta: {
-        relation: 'IsDocumentedBy',
         url: null,
-        type: 'url',
-        typeiso: 'information',
-        lang: 'en',
+        type: 'URL',
+        funct: 'information',
         title: {fr: null, en: null},
         description: {fr: null, en: null}
       },
-      languages: ['en', 'fr'],
-      types: ['information', 'search', 'download', 'order', 'offlineAccess']
+      functions: ['information', 'search', 'download', 'order'],
+      protocoles: {
+        'WWW:LINK-1.0-http--link': 'Adresse internet (URL)',
+        'WWW:DOWNLOAD-1.0-http--download': 'Fichier/Archive à télécharger (http)',
+        'WWW:DOWNLOAD-1.0-ftp--download': 'Fichier/Archive à télécharger (ftp)'
+      }
     }
   },
   methods: {

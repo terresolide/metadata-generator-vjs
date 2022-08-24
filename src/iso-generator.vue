@@ -675,28 +675,27 @@ export default {
       onLine.appendChild(olResource)
       var linkage = this.xmlDoc.createElement('gmd:linkage')
       var url = link.url
-      var protocole = link.protocole
-      if (link.type){
-        protocole = 'WWW:LINK-1.0-http--link'
-        if (link.type === 'download') {
-          protocole = 'WWW:DOWNLOAD-1.0-link--download'
-        } 
-        if (link.type === 'order') {
-          protocole = 'WWW:DOWNLOAD-1.0-link--order'
-        }
-        if (link.type === 'DOI') {
-          url = 'https://www.doi.org/' + link.url
-        }
+      var protocole = link.protocole ? link.protocole : 'WWW:LINK-1.0-http--link'
+      var funct = link.funct
+      if (link.type === 'DOI'){
+         protocole = 'WWW:LINK-1.0-http--link'
+         url = 'https://www.doi.org/' + link.url
+         funct = 'information'
       }
+      console.log(funct)
       linkage.appendChild(this.createNode('gmd:URL', url))
       olResource.appendChild(linkage)
       olResource.appendChild(this.createIncludeString('gmd:protocol', protocole, null, 'en', ['en']))
-      olResource.appendChild(this.createIncludeString('gmd:name', link.title, null, this.metadata.mainLang, this.metadata.langs))
-      olResource.appendChild(this.createIncludeString('gmd:description', link.description, null, this.metadata.mainLang, this.metadata.langs))
-      if (link.type) {
-        var funct = this.xmlDoc.createElement('gmd:function')
-        funct.appendChild(this.createNodeCode('gmd:CI_OnLineFunctionCode', 'link', link.typeiso))
-        olResource.appendChild(funct)
+      if (link.title[this.metadata.mainLang]) {
+        olResource.appendChild(this.createIncludeString('gmd:name', link.title, null, this.metadata.mainLang, this.metadata.langs))
+      }
+      if (link.description[this.metadata.mainLang]) {
+        olResource.appendChild(this.createIncludeString('gmd:description', link.description, null, this.metadata.mainLang, this.metadata.langs))
+      }
+      if (funct) {
+        var nodeFunction = this.xmlDoc.createElement('gmd:function')
+        nodeFunction.appendChild(this.createNodeCode('gmd:CI_OnLineFunctionCode', 'link', funct))
+        olResource.appendChild(nodeFunction)
       }
       return onLine
     },
