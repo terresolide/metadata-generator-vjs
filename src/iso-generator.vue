@@ -729,6 +729,7 @@ export default {
       return node
     },
     createContact(oContact) {
+      console.log(oContact)
       var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
       if (oContact.nameType === 'Personal') {
         var pers = this.createIncludeString('gmd:individualName', oContact.fullName, oContact.identifier, this.metadata.mainLang, this.metadata.langs)
@@ -737,14 +738,15 @@ export default {
       }
 //       var org = this.xmlDoc.createElement('gmd:organisationName')
 //       resp.appendChild(org)
+      var organisation = null
       if (oContact.nameType === 'Organizational' ) {
-        var organisation = {
-            name: oContact.fullName,
-            identifier: oContact.identifier
+        organisation = {
+          name: oContact.fullName,
+          identifier: oContact.identifier
         }
-      } else if (oContact.affiliations.length > 0) {
-        var organisation = oContact.affiliations[0]
-      }
+      } else if (oContact.affiliations.length > 0 && oContact.affiliations[0].name) {
+        organisation = oContact.affiliations[0]
+      } 
       if (organisation) {
         var org = this.createIncludeString('gmd:organisationName', organisation.name, organisation.identifier, this.metadata.mainLang, this.metadata.langs)
         resp.appendChild(org)

@@ -180,7 +180,7 @@
    },
    methods: {
      addAffiliation () {
-       this.meta.affiliations.push({})
+       this.meta.affiliations.push({name: null, identifier: null})
        this.change()
      },
      addIdentifier () {
@@ -198,7 +198,7 @@
      nameTypeChange () {
        if (this.meta.nameType === 'Organizational') {
          this.meta.affiliations = []
-       } else {
+       } else if (this.meta.affiliations.length === 0){
          this.addAffiliation()
        }
      },
