@@ -15,13 +15,6 @@
      <input style="width:425px;" :type="meta.type === 'DOI' ? 'text' : 'url'" required v-model="meta.url" @change="change"/>
      <meta-mro value="M"></meta-mro>
    </div>
-   <div class="iso">
-     <label>Type ISO</label>
-     <select v-model="meta.typeiso">
-       <option v-for="tp in types" :value="tp">{{tp}}</option>
-     </select> 
-     <meta-mro value="M"></meta-mro>
-   </div>
    <div class="datacite">
      <label>Relation</label>
    La collection 
@@ -42,11 +35,11 @@
      <label style="vertical-align:top;">Titre</label>
     
      <div style="display:inline-block;" >
-	     <div v-for="lang in languages">
-		      <span class="label">{{lang}}</span>
-		      <input type="text" required style="width:400px;" v-model="meta.title[lang]" @change="change"/>
-		      <span class="iso"><meta-mro value="M"></meta-mro></span>
-	      </div>
+       <div v-for="lang in languages">
+          <span class="label">{{lang}}</span>
+          <input type="text" required style="width:400px;" v-model="meta.title[lang]" @change="change"/>
+          <span class="iso"><meta-mro value="M"></meta-mro></span>
+        </div>
       </div>
    </div>
    <div class="iso">
@@ -57,7 +50,7 @@
         <meta-mro value="R"></meta-mro>
       </div>
    </div>
-	 
+   
  </div>
 </div>
 </template>
@@ -109,7 +102,6 @@ export default {
         description: {fr: null, en: null}
       },
       languages: ['en', 'fr'],
-      types: ['information', 'search', 'download', 'order', 'offlineAccess'],
       relations:['IsCitedBy','Cites', 'IsSupplementTo','IsSupplementedBy', 'IsContinuedBy', 'Continues', 'IsDescribedBy',
            'Describes', 'HasMetadata', 'IsMetadataFor','HasVersion',  'IsVersionOf', 'IsNewVersionOf', 'IsPreviousVersionOf',
            'IsPartOf', 'HasPart', 'IsPublishedIn', 'IsReferencedBy', 'References', 'IsDocumentedBy', 'Documents', 'IsCompiledBy',

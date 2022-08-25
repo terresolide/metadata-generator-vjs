@@ -416,18 +416,26 @@
      <label @click="deploy($event)"><i class="fa"></i> Généalogie 
      </label>
      <div class="properties">
+         <label class="bold">Niveau</label>
+         <div style="margin-left:22px;">
+	         <select v-model="meta.methodScope">
+	           <option value="dataset">Jeux de données</option>
+	           <option value="series">Série de jeux de données</option>
+	         </select>
+            <span class="iso"><meta-mro value="M"></meta-mro></span>
+         </div>
          <label class="bold">Méthodes</label>
           <div v-for="lang in meta.langs">
 	         <span class="label">{{lang}}</span>
 	         <textarea class="medium" v-model="meta.descriptions.Methods[lang]" @change="propertyChange($event)"></textarea>
           <meta-mro value="R"></meta-mro>
           </div>
-          <label class="bold">Informations Techniques</label>
+  <!--        <label class="bold">Informations Techniques</label>
           <div v-for="lang in meta.langs">
            <span class="label">{{lang}}</span>
            <textarea class="medium" v-model="meta.descriptions.TechnicalInfo[lang]" @change="propertyChange($event)"></textarea>
            <meta-mro value="O"></meta-mro>
-          </div>
+          </div>  --> 
     </div>
    </div>
    <div class="block-prop">
@@ -676,10 +684,10 @@ export default {
         formats: [],
         descriptions: {
           Abstract: {fr: null, en: null}, 
-          Methods: {fr: null, en: null},
-          TechnicalInfo: {fr: null, en: null}
+          Methods: {fr: null, en: null}
         },
         inspire: null,
+        methodScope: 'dataset',
         mainLang: 'fr',
         language: 'en',
         charset: 'utf8',

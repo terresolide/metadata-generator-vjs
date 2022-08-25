@@ -411,6 +411,8 @@ export default {
 
       this.appendDataIdentification()
       this.appendDistributionInfo()
+      // dataquality
+      this.appendDataQuality()
     },
     createNode (name, value) {
       var full =  this.xmlDoc.createElement(name)
@@ -583,6 +585,28 @@ export default {
       this.appendExtentTo(data)
       
     },
+    appendDataQuality () {
+      if (this.metadata.descriptions.Methods[this.metadata.mainLang]) {
+        var qInfo = this.xmlDoc.createElement('gmd:dataQualityInfo')
+        var mdQuality = this.xmlDoc.createElement('gmd:DQ_DataQuality')
+        qInfo.appendChild(mdQuality)
+        // append scope level
+        var scope = this.xmlDoc.createElement('gmd:scope')
+        mdQuality.appendChild(scope)
+        var dqScope = this.xmlDoc.createElement('gmd:DQ_Scope')
+        scope.appendChild(dqScope)
+        var level = this.xmlDoc.createElement('gmd:level')
+        level.appendChild(this.createNodeCode('gmd:MD_ScopeCode', 'scope', this.metadata.methodScope))
+        dqScope.appendChild(level)
+        // append lineage
+        var lineage = this.xmlDoc.createElement('gmd:lineage')
+        mdQuality.appendChild(lineage)
+        var liLineage = this.xmlDoc.createElement('gmd:LI_Lineage')
+        lineage.appendChild(liLineage)
+        liLineage.appendChild(this.createIncludeString('gmd:statement', this.metadata.descriptions.Methods, null, this.metadata.mainLang, this.metadata.langs))
+        this.xmlDoc.documentElement.appendChild(qInfo)
+      }
+    },
     appendDistributionInfo () {
       var add = false
       var distribution = this.xmlDoc.createElement('gmd:distributionInfo')
@@ -660,7 +684,8 @@ export default {
       var link = {
           type: 'DOI',
           url: doi,
-          typeiso: 'information',
+          funct: 'information',
+          protocole: 'DOI',
           title: 'doi:' + doi,
           description: {
             fr: 'Page de doi:' + doi,
@@ -677,10 +702,9 @@ export default {
       var url = link.url
       var protocole = link.protocole ? link.protocole : 'WWW:LINK-1.0-http--link'
       var funct = link.funct
-      if (link.type === 'DOI'){
-         protocole = 'WWW:LINK-1.0-http--link'
+      if (link.protocole === 'DOI'){
          url = 'https://www.doi.org/' + link.url
-         funct = 'information'
+         link.title = {fr: 'doi:' + link.url, en: 'doi:' + link.url}
       }
       linkage.appendChild(this.createNode('gmd:URL', url))
       olResource.appendChild(linkage)
