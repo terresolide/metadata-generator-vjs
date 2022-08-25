@@ -682,7 +682,6 @@ export default {
          url = 'https://www.doi.org/' + link.url
          funct = 'information'
       }
-      console.log(funct)
       linkage.appendChild(this.createNode('gmd:URL', url))
       olResource.appendChild(linkage)
       olResource.appendChild(this.createIncludeString('gmd:protocol', protocole, null, 'en', ['en']))
