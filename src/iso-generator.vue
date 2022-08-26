@@ -152,11 +152,18 @@ export default {
       return node
     },
     appendConstraintsTo (node) {
-      if (this.metadata.condition.access) {
+      if (this.metadata.rights.inspire && this.metadata.rights.inspire.inspire) {
+        var link = 'http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/' + this.metadata.rights.inspire.inspire
+        node.appendChild(this.createConstraint(
+            this.metadata.rights.inspire.type,
+            this.metadata.rights.inspire.code,
+            this.metadata.rights.inspire.title,
+            link))
+      } else if (this.metadata.condition.access) {
         if (this.metadata.condition.access === 'unknown') {
           var others = {
               fr: 'Aucune restriction d\'accès connue',
-              en: 'No known access restriction'
+              en: 'Limitations on public access unknown'
           }
           console.log('condition accès inconnu')
           var link = null
@@ -172,8 +179,8 @@ export default {
       if (this.metadata.condition.use) {
         if (this.metadata.condition.access === 'unknown') {
           var others = {
-              fr: 'Conditions inconnues',
-              en: 'Conditions unknown'
+              fr: 'Conditions d\'accès et d\'utilisation inconnues',
+              en: 'Conditions to access and use unknown'
           }
           var link = 'http://inspire.ec.europa.eu/metadata-codelist/ConditionsApplyingToAccessAndUse/conditionsUnknown'
         } else {
@@ -222,6 +229,11 @@ export default {
         legal.appendChild(typeConstraint)
         typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', restrictionCode))
       })
+      if (restrictionCode === 'license') {
+        var typeConstraint = self.xmlDoc.createElement('gmd:useConstraints')
+        legal.appendChild(typeConstraint)
+        typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', 'otherRestrictions'))
+      }
       var other = this.createIncludeString('gmd:otherConstraints', other, link, this.metadata.mainLang, this.metadata.langs)
       legal.appendChild(other)
       return constraints

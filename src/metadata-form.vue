@@ -452,18 +452,29 @@
          </thead>
          <tbody>
            <tr>
-             <td>Condition d'accès</td>
+             <td>Restrictions d'accès</td>
              <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'no'" @click="changeCondition('access', 'no')"/> </td>
              <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'unknown'" @click="changeCondition('access', 'unknown')"/> </td>
            </tr>
            <tr>
-             <td>Condition d'utilisation</td>
+             <td>Conditions d'accès et utilisation</td>
              <td>  <input type="checkbox" :disabled="useCondition" :checked="meta.condition.use === 'no'" @click="changeCondition('use', 'no')"/> </td>
              <td>  <input type="checkbox" :disabled="useCondition" :checked="meta.condition.use === 'unknown'" @click="changeCondition('use', 'unknown')"/> </td>
            </tr>
          </tbody>
        </table>
-        
+        <div style="margin-bottom:5px;" > 
+          <span class="label" style="display:block;max-width:350px;">Restriction d'accès public INSPIRE
+          <formater-tooltip description="S'il y a une restriction d'accès public...<br>
+          Choisir parmi les restrictions d'accès public
+           définies par les directives INSPIRE"></formater-tooltip>
+           <span class="iso"><meta-mro value="C"></meta-mro></span>
+          </span>
+          <div v-if="meta.rights.inspire" style="width:100%;margin-left:-15px;">
+            <metadata-right :right="meta.rights.inspire" :is-inspire="true" :fixed="true" @remove="removeInspireRight" @change="changeInspireRight" ></metadata-right>
+          </div>
+          <input v-if="!meta.rights.inspire" type="button" value="Ajouter restriction" @click="addInspireRight" />
+       </div>
        <div style="margin-bottom:5px;" > 
           <span class="label" style="display:block;">License</span>
           <div v-if="meta.rights.license">
@@ -478,8 +489,8 @@
              <meta-mro value="R"></meta-mro>
              <input type="button" :value="meta.rights.howToCite ? 'Mettre à jour' : 'Ajouter citation'" @click="addHowToCite"/>
            </span>
-           <div v-if="meta.rights.howToCite" class="iso" style="width:100%;margin-left:-15px;" >
-           <metadata-right :id="-1" :right="meta.rights.howToCite" :langs="meta.langs"  
+           <div v-if="meta.rights.howToCite" class="iso"  style="width:100%;margin-left:-15px;" >
+           <metadata-right :id="-1" :right="meta.rights.howToCite" :fixed="true" :langs="meta.langs"  
            @remove="removeHowToCite" @change="changeHowToCite" ></metadata-right>
            </div>
            
@@ -711,7 +722,7 @@ export default {
           access: 'unknown',
           use: 'unknown'
         },
-        rights: {license: null, howToCite: null, others: []},
+        rights: {license: null, howToCite: null, inspire: null, others: []},
         resolutions: []
       }
     },
@@ -810,6 +821,7 @@ export default {
       this.meta.condition.use = null
       this.meta.rights.howToCite = {
           type: 'use',
+          code: 'otherRestrictions',
           title: {
             fr: 'Comment citer la collection: "' + this.citation + '"',
             en: 'How to cite: "' + this.citation + '"'
@@ -824,15 +836,31 @@ export default {
     addImage () {
       this.meta.images.push({url: null, title: {fr: null, en: null}})
     },
+    addInspireRight () {
+      this.meta.condition.use = null
+      this.meta.rights.inspire = {
+          type: 'access',
+          code: 'otherRestrictions',
+          title: {
+            fr: '',
+            en: ''
+          },
+          inspire: 'INSPIRE_Directive_Article13_1e',
+          url: {fr: null, en: null}
+      }
+      this.updateCondition()
+    },
     addLicense () {
-      this.meta.rights.license = {name: null, uri: null, identifier: null}
+      this.meta.rights.license = {name: null, uri: null, identifier: null, code: 'license', type: 'use'}
       this.updateCondition()
     },
     addLicenseCC () {
       this.meta.condition.use = null
       this.meta.rights.license = {
           name: 'Creative Commons Attribution Non Commercial 4.0 International', 
-          uri: 'https://creativecommons.org/licenses/by-nc/4.0/legalcode', 
+          uri: 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
+          code: 'license',
+          type: 'use',
           identifier: 'CC-BY-NC-4.0'}
       this.updateCondition()
     },
@@ -852,7 +880,7 @@ export default {
       this.meta.resolutions.push({value: null, unit: 'm'})
     },
     addRight () {
-      this.meta.rights.others.push({type: 'use', title:{fr: null, en: null}, url: {fr:null, en:null}})
+      this.meta.rights.others.push({type: 'use', code: 'otherRestrictions', title:{fr: null, en: null}, url: {fr:null, en:null}})
       this.updateCondition()
     },
     addService () {
@@ -906,6 +934,9 @@ export default {
     changeImage (obj) {
       this.meta.images[obj.id] = obj.image
       this.change()
+    },
+    changeInspireRight (obj) {
+      this.meta.rights.inspire = obj.right
     },
     changeKeyword (obj) {
       this.meta.subjects[obj.type][obj.id] = obj.keyword
@@ -1094,6 +1125,11 @@ export default {
       this.meta.images.splice(id, 1)
       this.change()
     },
+    removeInspireRight(id) {
+      this.meta.rights.inspire = null
+      this.updateCondition()
+      this.change()
+    },
     removeKeyword (obj) {
       this.meta.subjects[obj.type].splice(obj.id, 1)
       this.change()
@@ -1142,6 +1178,7 @@ export default {
       if (this.meta.rights.howToCite) {
         used.push({})
       }
+      
       console.log(used.length)
       if (used.length > 0) {
         this.useCondition = true
@@ -1153,6 +1190,9 @@ export default {
         }
       }
       var access = this.meta.rights.others.filter(rg => rg.type === 'access' || rg.type === 'both')
+      if (this.meta.rights.inspire) {
+        access.push({})
+      }
       if (access.length > 0) {
         this.accessCondition = true
         this.meta.condition.access = null
@@ -1283,6 +1323,7 @@ label + div.properties {
 }
 label.deployed + div.properties {
   display: block;
+  max-width:100%;
 }
 
 .fa-close {
