@@ -62,7 +62,7 @@ export default {
   watch: {
     metadata: {
       handler (newvalue) {
-	      console.log('META CHANGE')
+	     // console.log('META CHANGE')
 	      this.createISO19139()
       },
       deep: true
@@ -128,7 +128,7 @@ export default {
       }
     },
     createGeolocation (obj) {
-      console.log(obj)
+      // console.log(obj)
       var self = this
       var node = this.xmlDoc.createElement('gmd:geographicElement')
       var exNode = this.xmlDoc.createElement('gmd:EX_GeographicBoundingBox');
@@ -146,7 +146,7 @@ export default {
       return node
     },
     createCard (value, elt) {
-      console.log(value)
+      // console.log(value)
       var node = this.xmlDoc.createElement(elt)
       node.appendChild(this.createNode('gco:Decimal', value))
       return node
@@ -165,7 +165,7 @@ export default {
               fr: 'Aucune restriction d\'accès connue',
               en: 'Limitations on public access unknown'
           }
-          console.log('condition accès inconnu')
+         // console.log('condition accès inconnu')
           var link = null
         } else {
           var others = {
@@ -210,7 +210,7 @@ export default {
               others[lang] += ' (' + right.url[lang] + ')'
             }
           }
-          node.appendChild(self.createConstraint(right.type, 'otherRestrictions', others, null))
+          node.appendChild(self.createConstraint(right.type, right.code, others, null))
         }
       })
     },
@@ -229,7 +229,7 @@ export default {
         legal.appendChild(typeConstraint)
         typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', restrictionCode))
       })
-      if (restrictionCode === 'license') {
+      if (restrictionCode !== 'otherRestrictions') {
         var typeConstraint = self.xmlDoc.createElement('gmd:useConstraints')
         legal.appendChild(typeConstraint)
         typeConstraint.appendChild(self.createNodeCode('gmd:MD_RestrictionCode', 'restriction', 'otherRestrictions'))
@@ -661,7 +661,7 @@ export default {
 //       }
       var addLink = false
       var transferOptions = this.xmlDoc.createElement('gmd:transferOptions')
-      var mdTransferOptions = this.xmlDoc.createElement('MD_DigitalTransferOptions')
+      var mdTransferOptions = this.xmlDoc.createElement('gmd:MD_DigitalTransferOptions')
       transferOptions.appendChild(mdTransferOptions)
       if (this.metadata.doi) {
         addLink = true
@@ -682,7 +682,15 @@ export default {
              addLink = true
            }
         })
-       }
+      }
+      if (this.metadata.related.length > 0) {
+        this.metadata.related.forEach(function (link) {
+          if (link.url) {
+            mdTransferOptions.appendChild(self.createOnLine(link))
+            addLink = true
+          }
+       })
+      }
       if (addLink) {
         mdDistrib.appendChild(transferOptions)
         add = true
@@ -765,7 +773,7 @@ export default {
       return node
     },
     createContact(oContact) {
-      console.log(oContact)
+      // console.log(oContact)
       var resp = this.xmlDoc.createElement('gmd:CI_ResponsibleParty')
       if (oContact.nameType === 'Personal') {
         var pers = this.createIncludeString('gmd:individualName', oContact.fullName, oContact.identifier, this.metadata.mainLang, this.metadata.langs)

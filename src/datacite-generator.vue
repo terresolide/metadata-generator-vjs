@@ -237,10 +237,10 @@ export default {
             var rootItem = this.xmlDoc.createElement('relatedItems')
             var addId = false
             var addItem = false
-            this.metadata.links.forEach(function (link) {
+            this.metadata.related.forEach(function (link) {
               console.log(link)
               if (link && link.url) {
-                if (link.title[link.lang]) {
+                if (link.title[link.lang] && link.type === 'URL') {
                   var item = self.xmlDoc.createElement('relatedItem')
                   item.setAttribute('relationType', link.relation)
                   var nLink = self.createNode('relatedItemIdentifier', link.url.trim())
@@ -263,7 +263,7 @@ export default {
                   item.appendChild(titles)
                   rootItem.appendChild(item)
                   addItem = true
-                } else {
+                } else if (link.type === 'DOI'){
 	                var nLink = self.createNode('relatedIdentifier', link.url.trim())
 	                nLink.setAttribute('relatedIdentifierType', link.type)
 	                nLink.setAttribute('relationType', link.relation)

@@ -39,6 +39,7 @@
           <span class="label">{{lang}}</span>
           <input type="text" required style="width:400px;" v-model="meta.title[lang]" @change="change"/>
           <span class="iso"><meta-mro value="M"></meta-mro></span>
+          <span class="datacite"><meta-mro value="O"></meta-mro></span>
         </div>
       </div>
    </div>
@@ -78,6 +79,7 @@ export default {
   created () {
     this.meta = this.link
     this.changeLang()
+    console.log(this.languages)
   },
   watch: {
     link: {
@@ -116,6 +118,7 @@ export default {
     },
     changeLang () {
       this.languages = [...this.langs]
+      console.log(this.languages)
       if (this.languages.indexOf(this.meta.lang) < 0) {
         this.languages.unshift(this.meta.lang)
       }

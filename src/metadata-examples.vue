@@ -10,8 +10,8 @@
 </template>
 <script>
 const examples = 
-  [ { name: 'EXemple test', import: () => import('./assets/exemples/exemple1.js')},
-    {name: 'Test UUid', import: () => import('./assets/exemples/exemple2.js')}]
+  [ { name: 'GRACE Collection', import: () => import('./assets/exemples/exemple1.js')},
+    {name: 'MNT Bathymétrique Nouvelle Calédonie', import: () => import('./assets/exemples/exemple2.js')}]
 
 export default {
   name: 'MetadataExample',

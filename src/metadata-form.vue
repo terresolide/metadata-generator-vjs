@@ -252,7 +252,7 @@
        </div>
      </div>
    </div>
-       <div class="block-prop iso">
+   <div class="block-prop iso">
      <meta-mro value="C"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Lien vers la ressource
      <formater-tooltip :width="450" description="Il s'agit de lien permettant d'accéder à la ressource: lien de téléchargement, interface de recherche,
@@ -453,8 +453,8 @@
          <tbody>
            <tr>
              <td>Restrictions d'accès</td>
-             <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'no'" @click="changeCondition('access', 'no')"/> </td>
-             <td>  <input type="checkbox" :disabled="accessCondition" :checked="meta.condition.access === 'unknown'" @click="changeCondition('access', 'unknown')"/> </td>
+             <td>  <input type="checkbox" disabled :checked="meta.condition.access === 'no'" @click="changeCondition('access', 'no')"/> </td>
+             <td>   </td>
            </tr>
            <tr>
              <td>Conditions d'accès et utilisation</td>
@@ -497,7 +497,7 @@
        </div>
        <div >
           <span class="label" style="display:block;">Autre</span>
-           <metadata-right v-for="right, id in meta.rights.others" :key="id" :id="id" :right="right" 
+           <metadata-right v-for="right, id in meta.rights.others" :key="id" :id="id" :right="right" :fixed="false"
           :langs="meta.langs"  @change="changeRight" @remove="removeRight" @typeChange="changeRightType"></metadata-right>
           <input type="button" value="Ajouter condition" @click="addRight" />
         </div>
@@ -533,10 +533,15 @@
     <div class="block-prop">
      <meta-mro value="O"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Lien vers d'autres ressources
-     <formater-tooltip :width="450" description="@todo"></formater-tooltip>
+     <formater-tooltip :width="450" description="Il"></formater-tooltip>
+     
+     
      </label>
      <div class="properties">
-        @todo
+      <div v-for="link, id in meta.related">
+        <metadata-related :link="link" :id="id" :langs="meta.langs" @change="changeRelated" @remove="removeRelated"></metadata-related>
+      </div>
+      <input type="button" value="Ajouter lien" @click="addRelated"/> 
       </div>
    </div>
     <draw-bbox v-if="bboxId >= 0" :bboxes="meta.geoLocation" :id="bboxId" 
@@ -552,6 +557,7 @@ const MetadataBbox = () => import('./metadata-bbox.vue')
 const MetadataKeyword = () => import('./metadata-keyword.vue')
 const MetadataLicense = () => import('./metadata-license.vue')
 const MetadataLink = () => import('./metadata-link.vue')
+const MetadataRelated = () => import('./metadata-related.vue')
 const MetadataService = () => import('./metadata-service.vue')
 const MetadataResolution = () => import('./metadata-resolution.vue')
 const MetadataRight = () => import('./metadata-right.vue')
@@ -574,6 +580,7 @@ export default {
     MetadataKeyword,
     MetadataLicense,
     MetadataLink,
+    MetadataRelated,
     MetadataRepresentation,
     MetadataReferentiel,
     MetadataResolution,
@@ -705,6 +712,7 @@ export default {
         resourceType: 'Collection of',
         identifiers: [{type:null, identifier: null}],
         links: [],
+        related: [],
         services: [],
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
         categories: [],
@@ -719,7 +727,7 @@ export default {
         referentiels: [{name: 'WGS 84', link: 'http://www.opengis.net/def/crs/EPSG/0/4326'}],
         images: [],
         condition: {
-          access: 'unknown',
+          access: 'no',
           use: 'unknown'
         },
         rights: {license: null, howToCite: null, inspire: null, others: []},
@@ -873,6 +881,9 @@ export default {
     addReferentiel () {
       this.meta.referentiels.push({name: null, link: null})
     },
+    addRelated () {
+      this.meta.related.push({url: null, type: 'URL', lang: 'en', funct: 'information', relation: 'IsDocumentedBy', protocole: 'WWW:LINK-1.0-http--related', title: {fr: null, en: null}, description: {fr: null, en: null}})
+    },
     addRepresentation () {
       this.meta.representations.push('')
     },
@@ -972,6 +983,10 @@ export default {
         this.meta.changement = this.meta.changement + 1
         this.change()
       }
+    },
+    changeRelated (obj) {
+      this.meta.related[obj.id] = obj.link
+      this.change()
     },
     changeRepresentation (obj) {
       // remove duplicate
@@ -1148,6 +1163,11 @@ export default {
       this.meta.referentiels.splice(id, 1)
       this.change()
     },
+    removeRelated (id) {
+      this.meta.related.splice(id, 1)
+      this.change()
+      
+    },
     removeRepresentation (id) {
       this.meta.representations.splice(id, 1)
       this.change()
@@ -1199,7 +1219,7 @@ export default {
       } else  {
         this.accessCondition = false
         if (!this.meta.condition.access) {
-          this.meta.condition.access = 'unknown'
+          this.meta.condition.access = 'no'
         }
       }
     },

@@ -1,6 +1,6 @@
 <template>
 <div class="block-element">
-   <span class="circle" v-if="id > -1">{{id + 1 }}</span>
+  <span class="circle" v-if="id > -1">{{id + 1 }}</span>
   <div class="element-content">
      <div v-if="erasable" style="position:absolute;top:0;right:3px;" class="fa fa-close" @click="remove"></div>
     <div v-show="!isInspire">
@@ -11,8 +11,8 @@
     </div>
      <div v-show="!isInspire">
     <label style="font-weight:700;vertical-align:baseline;">Restriction</label>
-      <select v-model="meta.code" @change="updateCondition()" :disabled="fixed" size="15" style="max-width:300px;">
-        <option v-for="tp, id in codes" :value="id" style="max-width:300px;word-wrap:break-word;">{{tp}}</option>
+      <select v-model="meta.code"  :disabled="fixed" >
+        <option v-for="tp, id in codes" :value="id" >{{tp}}</option>
       </select>
     </div>
     <div v-if="isInspire" style="margin-bottom:15px;" >
