@@ -1,6 +1,6 @@
 <template>
  <div class="metadata-generator">
-   <h1>Générateur de métadonnées DataCite et ISO19139 pour les collections ForM@Ter</h1>
+   <h1>Générateur de métadonnées DataCite et ISO19139 pour les collections FormaTerre</h1>
    <div>
      <div style="margin-bottom:10px;">
 	     <div style="margin:5px 0;"><em>En attendant mieux: pour <b>sauvegarder</b> votre saisie, 

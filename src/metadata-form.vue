@@ -28,7 +28,7 @@
   <div class="block-prop">
      <meta-mro value="M"></meta-mro>
      <label  @click="deploy($event)"><i class="fa"></i> Langue des metadonnées
-       <formater-tooltip description="Pour Datacite, il vaut mieux <b>anglais</b>, pour ForM@Ter privilégiez le <b>français</b>.
+       <formater-tooltip description="Pour Datacite, il vaut mieux <b>anglais</b>, pour FormaTerre privilégiez le <b>français</b>.
         Bref c'est mieux d'utiliser les deux langues"></formater-tooltip>
      
      </label>
@@ -277,14 +277,14 @@
     <div class="block-prop iso">
      <meta-mro value="C"></meta-mro>
      <label @click="deploy($event)"><i class="fa"></i> Service
-     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour ForM@Ter et 
+     <formater-tooltip :width="450" description="Il s'agit de services associés comme WMS, WFS, SOS.... La liste n'est pas très explicite, y compris pour FormaTerre et 
      le protocole n'est pas toujours bien entré par les responsables!
      Pour le moment, nous sommes en capacité d'utiliser les services pour les protocoles:
      <ul>
        <li>WFS</li>
        <li>WMS: OGC:WMS, OGC:WMS-1.1.1-http-get-capabilities ...</li>
        <li>WMTS</li>
-       <li>XYZ-Tile-Service</li>
+       <li>OGC API Tiles</li>
        <li>OpenSearch</li>
      </ul>"></formater-tooltip>
      
@@ -717,7 +717,7 @@ export default {
         subjects: {discipline: [], variable: [], platform:[], productType: [], featureOfInterest: [], other: []},
         categories: [],
         representations: ['grid'],
-        metaContact: {fullName: 'ForM@Ter', email: 'contact@poleterresolide.fr', role: 'pointOfContact', type: 'DataCurator', affiliations:[], nameType: 'Organizational'},
+        metaContact: {fullName: 'FormaTerre', email: 'contact@poleterresolide.fr', role: 'pointOfContact', type: 'DataCurator', affiliations:[], nameType: 'Organizational'},
         contributors: [],
         dates: [],
         status: 'onGoing',

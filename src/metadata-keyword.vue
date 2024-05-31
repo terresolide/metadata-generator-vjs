@@ -98,7 +98,7 @@ export default {
             langs: ['en']
           }, {
             id: 'fmtDiscipline',
-            name: 'ForM@Ter - Disciplines et thèmes pour la Terre Solide',
+            name: 'FormaTerre - Disciplines et thèmes pour la Terre Solide',
             schemeUrl: 'https://service.poleterresolide.fr/voc/science_field',
             valueRoot: 'https://service.poleterresolide.fr/voc/science_field/',
             searchUrl: 'https://service.poleterresolide.fr/voc/science_field',
@@ -118,7 +118,7 @@ export default {
           langs: ['en']
          }, {
            id: 'fmtPlatform',
-           name: 'ForM@Ter - Plateformes',
+           name: 'FormaTerre - Plateformes',
            schemeUrl: 'https://service.poleterresolide.fr/voc/platform',
            valueRoot: 'https://service.poleterresolide.fr/voc/platform/',
            searchUrl: 'https://service.poleterresolide.fr/voc/platform',
@@ -138,7 +138,7 @@ export default {
             langs: ['en']
            }, {
              id: 'fmtVariable',
-             name: 'ForM@Ter - Variables',
+             name: 'FormaTerre - Variables',
              schemeUrl: 'https://service.poleterresolide.fr/voc/variable',
              valueRoot: 'https://service.poleterresolide.fr/voc/variable/',
              searchUrl: 'https://service.poleterresolide.fr/voc/variable',
